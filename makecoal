@@ -5,6 +5,6 @@ while true do
     turtle.dropDown(8)
   end
 
-  os.sleep(81)
+  os.sleep(80)
 end
 
