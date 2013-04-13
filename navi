@@ -68,8 +68,14 @@ function setHeading(target)
 		return
 	end
 
-	while heading ~= target do
-		turnRight()
+	if heading - target == 1 or (target == 3 and heading == 0) then
+		while heading ~= target do
+			turnLeft()
+		end
+	else
+		while heading ~= target do
+			turnRight()
+		end
 	end
 end
 

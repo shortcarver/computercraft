@@ -1,0 +1,120 @@
+os.loadAPI("/rom/mcarver/navi")
+
+local DELIVERY_NETWORK = 2000
+
+-- startup stuff
+local function printUsage()
+	print( "Usages:" )
+	print( "deliverybot itemname" )
+end
+
+local tArgs = { ... }
+if #tArgs < 1 then
+	printUsage()
+	return
+end
+
+local itemName = tArgs[1]
+
+print("Sharing ", itemName)
+
+function configureModem(networkId)
+	local modem = nil
+	local modem_side = nil
+
+	for n,sSide in ipairs( rs.getSides() ) do
+		if peripheral.getType( sSide ) == "modem" and peripheral.call( sSide, "isWireless" ) then	
+			modem_side = sSide
+			modem = peripheral.wrap(sSide)
+			print("Found modem on ", sSide, " side.")
+			break
+		end
+	end
+
+	if modem == nil then
+		print("Could not find modem!")
+		return
+	end
+
+	if not modem.isOpen(networkId ) then
+		print( "Opening ",networkId," channel modem" )
+		modem.open(networkId)
+	end
+
+	return modem, modem_side
+end
+
+function listRequest(modem, sReplyChannel, nameRequest)
+	-- update inventory
+	turtle.select(2)
+	turtle.suck()
+
+	-- count items
+	local itemCount = turtle.getItemCount(2)
+
+
+	print("I have ", itemCount," items.")
+	if itemCount == 0 then
+		print("No items available, not replying")
+	else
+		print("Sending to ", sReplyChannel)
+
+		local posX, posY, posZ = gps.locate(5)
+		print("Location: (",posX,",",posY,",",posZ,")")
+
+		modem.transmit( sReplyChannel, DELIVERY_NETWORK, 
+			textutils.serialize({os.getComputerID(),itemName,itemCount,posX,posY,posZ}))
+	end
+end
+
+function deliveryRequest(modem, sReplyChannel, x, y, z)
+	-- store current position
+	local oh = navi.findHeading()
+	local xo,yo,zo = gps.locate(5)
+
+	turtle.select(2)
+	turtle.suck()
+
+	-- fly to target
+	navi.goto(x,y,z)
+
+	-- drop items
+	turtle.select(2)
+	turtle.dropDown()
+
+	-- tell client that we are done
+	modem.transmit( sReplyChannel, DELIVERY_NETWORK, 
+		textutils.serialize({"complete"}))
+
+	-- fly home
+	navi.goto(xo,yo,zo)
+	navi.setHeading(oh)
+end
+
+function startServer()
+	local modem = nil
+	local modem_side = nil
+
+	modem, modem_side = configureModem(DELIVERY_NETWORK)
+
+	print("Listening for requests")
+	while true do
+		local e, p1, p2, p3, p4, p5 = os.pullEvent()
+		if e == "modem_message" then
+			-- We received a message from a modem
+			local sSide, sChannel, sReplyChannel, sMessage, nDistance = p1, p2, p3, p4, p5
+
+			if sSide == modem_side and sChannel == DELIVERY_NETWORK then
+				local tResult = textutils.unserialize( sMessage )
+
+				if tResult[1] == "list" then
+					listRequest(modem, sReplyChannel, tResult[2])
+				elseif tResult[1] == "deliver" and tResult[2] == os.getComputerID() then
+					deliveryRequest(modem, sReplyChannel, tResult[3], tResult[4], tResult[5])
+				end
+			end
+		end
+	end
+end
+
+startServer()

@@ -1,0 +1,26 @@
+function configureModem(networkId)
+	local modem = nil
+	local modem_side = nil
+
+	for n,sSide in ipairs( rs.getSides() ) do
+		if peripheral.getType( sSide ) == "modem" and peripheral.call( sSide, "isWireless" ) then	
+			modem_side = sSide
+			modem = peripheral.wrap(sSide)
+			print("Found modem on ", sSide, " side.")
+			break
+		end
+	end
+
+	if modem == nil then
+		print("Could not find modem!")
+		return
+	end
+
+	if not modem.isOpen(networkId) then
+		print( "Opening ",networkId," channel modem" )
+		modem.open(networkId)
+	end
+
+	return modem, modem_side
+end
+

@@ -1,0 +1,7 @@
+while true do
+	if turtle.suck() then
+		turtle.dropUp()
+	else
+		os.sleep(10)
+	end
+end

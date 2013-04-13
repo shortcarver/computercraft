@@ -9,4 +9,7 @@ while true do
   else
     os.sleep(10)
   end
+
+  turtle.drop()
+
 end
