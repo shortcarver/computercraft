@@ -1,0 +1,145 @@
+local heading = -1
+
+-- calculate the heading
+
+function forwardTest()
+	local x,y,z = gps.locate(5)
+
+	if turtle.forward() == false then
+		return -1
+	end
+
+	local x1,y1,z1 = gps.locate(5)
+
+	print(x1)
+	print(y1)
+	print(z1)
+
+	turtle.back()
+
+	if x1 > x then
+		return 3 -- positive x direction
+	elseif x1 < x then
+		return 1 -- negative x direction
+	elseif z1 > z then
+		return 0 -- positive z direction
+	elseif z1 < z then
+		return 2 -- negative z direction
+	end
+end
+
+function findHeading()
+	heading = forwardTest()
+	if heading == -1 then
+		turtle.turnRight()
+		heading = forwardTest()
+		if heading == -1 then
+			turtle.turnRight()
+			heading = forwardTest()
+			if heading == -1 then
+				turtle.turnRight()
+				heading = forwardTest()
+				turnLeft()
+			end
+			turnLeft()
+		end
+		turnLeft()
+	end
+
+	return heading
+end
+
+function turnRight()
+	turtle.turnRight()
+	heading = (heading + 1) % 4
+end
+
+function turnLeft()
+	turtle.turnLeft()
+	heading = ((heading -1) + 4) % 4
+end
+
+function setHeading(target)
+	if heading == -1 then
+		findHeading()
+	end
+	
+	if target == heading then
+		return
+	end
+
+	while heading ~= target do
+		turnRight()
+	end
+end
+
+function moveToX(x)
+	if heading == -1 then
+		findHeading()
+	end
+
+	local xc, yc, zc = gps.locate(5)
+
+	if xc > x then
+		setHeading(1)
+	elseif xc < x then
+		setHeading(3)
+	end
+
+	while xc ~= x do
+		turtle.forward()
+		xc, yc, zc = gps.locate(5)
+	end
+end
+
+function moveToZ(z)
+	if heading == -1 then
+		findHeading()
+	end
+
+	local xc, yc, zc = gps.locate(5)
+
+	if zc > z then
+		setHeading(2)
+	elseif zc < z then
+		setHeading(0)
+	end
+
+	while zc ~= z do
+		turtle.forward()
+		xc, yc, zc = gps.locate(5)
+	end
+end
+
+function moveToY(y)
+	local xc, yc, zc = gps.locate(5)
+
+	while y > yc do
+		turtle.up()
+		xc, yc, zc = gps.locate(5)
+	end
+
+	while y < yc do
+		turtle.down()
+		xc, yc, zc = gps.locate(5)
+	end
+end
+
+
+function goto(x,y,z)
+	moveToY(85)
+
+	local xc, yc, zc = gps.locate(5)
+
+	if math.abs(xc-x) < math.abs(zc-z) then
+		moveToX(x)
+		moveToZ(z)
+	else
+		moveToZ(z)
+		moveToX(x)
+	end
+
+	moveToY(y)
+end
+
+-- goto(101,74,188)

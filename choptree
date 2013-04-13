@@ -1,0 +1,120 @@
+os.loadAPI("/rom/mcarver/itemgrabber")
+
+function doRefuel()
+  while turtle.getFuelLevel() < 1000 and turtle.getItemCount(1) > 0 do
+    turtle.select(1)
+    turtle.refuel(1)
+  end
+
+  if turtle.getItemCount(1) <= 10 then
+	itemgrabber.grabItem("charcoal", 1)
+  end
+end
+
+function toTree()
+  turtle.up()
+  turtle.up()
+  turtle.forward()
+  turtle.forward()
+end
+
+function moveHome()
+  turtle.back()
+  turtle.back()
+  turtle.down()
+  turtle.down()
+end
+
+function checkTree()
+  return turtle.detect()
+end
+
+function chopTree()
+  turtle.select(3)
+  turtle.dig()
+  turtle.forward()
+  turtle.digDown()
+  
+  local count = 0
+  while turtle.detectUp() == true do
+    turtle.digUp()
+    turtle.up()
+    count = count + 1
+  end
+  
+  for i=1,count,1 do
+    turtle.down()
+  end
+end
+
+function placeSappling()
+  turtle.select(2)
+  turtle.placeDown()
+  turtle.back()
+end
+
+function bonemeal()
+  turtle.select(4)
+  while turtle.detect() == false do
+    turtle.down()
+    turtle.place()
+    turtle.up()
+    doRefuel()
+    if turtle.getItemCount(4) == 0 then
+      return
+    end
+  end
+end
+
+function dumpWood()
+  turtle.turnLeft()
+  turtle.turnLeft()
+  turtle.select(3)
+  local count = turtle.getItemCount(3)
+  
+  if count > 1 then
+    turtle.drop(count - 1)
+  end
+  turtle.turnLeft()
+  turtle.turnLeft()
+end
+
+function checkSapplings()
+	if turtle.getItemCount(2) <= 1 then
+		itemgrabber.grabItem("sapplings", 2)
+	end
+end
+
+local waitTime = 60
+
+while true do
+  doRefuel()
+  checkSapplings()
+  toTree()
+  if checkTree() == true then
+    chopTree()
+    placeSappling()
+    moveHome()
+    dumpWood()
+    waitTime = waitTime - 10
+  else
+    moveHome()
+    waitTime = waitTime + 10
+  end
+  
+  if waitTime < 10 then
+    waitTime = 10
+  end
+  
+  if waitTime > 300 then
+    waitTime = 300
+  end
+
+  print("Fuel: ",turtle.getFuelLevel())
+  print("Sleep: ",waitTime," seconds")
+
+  os.sleep(waitTime)
+end
+
+  
+ 

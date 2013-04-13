@@ -1,0 +1,32 @@
+os.loadAPI("/rom/mcarver/navi")
+os.loadAPI("/rom/mcarver/finditem")
+
+function grabItem(itemName, slot)
+
+	-- store old position
+	print("Store position")
+	local oh = navi.findHeading()
+	local xo,yo,zo = gps.locate(5)
+
+	print(oh,",",xo,",",yo,",",zo)
+
+	-- find goods
+	print("locating goods")
+	local name,count,x,y,z = finditem.find(itemName)
+
+	-- go to the goods
+	print("goto goods(",name,",",count,",",x,",",y,",",z,")")
+	navi.goto(x,y,z)
+
+	-- grab them
+	print("grabbing items")
+	turtle.select(slot)
+	turtle.suckDown()
+
+	-- go home
+	print("going home")
+	navi.goto(xo,yo,zo)
+	navi.setHeading(oh)
+end
+
+-- grabItem("charcoal",1)

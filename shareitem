@@ -1,0 +1,85 @@
+local REQUEST_CHANNEL = 1000
+
+
+local function printUsage()
+	print( "Usages:" )
+	print( "shareitem name" )
+end
+
+local tArgs = { ... }
+if #tArgs < 1 then
+	printUsage()
+	return
+end
+
+local itemName = tArgs[1]
+
+
+print("Sharing ", itemName)
+
+local modem = nil
+local modem_side = nil
+for n,sSide in ipairs( rs.getSides() ) do
+	if peripheral.getType( sSide ) == "modem" and peripheral.call( sSide, "isWireless" ) then	
+		modem_side = sSide
+		modem = peripheral.wrap(sSide)
+		print("Found modem on ", sSide, " side.")
+		break
+	end
+end
+
+if modem == nil then
+	print("Could not find modem!")
+	return
+end
+
+if not modem.isOpen( REQUEST_CHANNEL ) then
+	print( "Opening REQUEST channel modem" )
+	modem.open( REQUEST_CHANNEL )
+end
+
+function getGPS()
+	local posX, posY, posZ = gps.locate(5)
+	posY = posY + 1
+	return posX,posY,posZ
+end
+
+print("Listening for requests")
+while true do
+	local e, p1, p2, p3, p4, p5 = os.pullEvent()
+	if e == "modem_message" then
+		-- We received a message from a modem
+		local sSide, sChannel, sReplyChannel, sMessage, nDistance = p1, p2, p3, p4, p5
+		if sSide == modem_side and sChannel == REQUEST_CHANNEL and sMessage == itemName then
+			-- we recieved a request for something we serve
+			print("Recieved request for ", itemName)
+
+			-- update inventory
+			while turtle.suck() == true do
+			  os.sleep(1)
+			end
+
+			-- count items
+			local itemCount = 0
+			for i=1,16,1 do
+				itemCount = itemCount + turtle.getItemCount(i)
+			end
+
+			print("I have ", itemCount," items.")
+			if itemCount == 0 then
+				print("No items available, not replying")
+			else
+				print("Sending to ", sReplyChannel)
+
+				local posX, posY, posZ = getGPS()
+				print("Location: (",posX,",",posY,",",posZ,")")
+
+				modem.transmit( sReplyChannel, REQUEST_CHANNEL, textutils.serialize({itemName,itemCount,posX,posY,posZ}) )
+			end
+
+		elseif sSide == modem_side and sChannel == REQUEST_CHANNEL and sMessage == "list" then
+			print("listing..")
+			modem.transmit( sReplyChannel, REQUEST_CHANNEL, itemName )
+		end
+	end
+end
