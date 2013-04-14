@@ -1,0 +1,65 @@
+os.loadAPI("/rom/mcarver/refuel")
+
+while true do
+	turtle.select(2)
+
+	while not turtle.suck() do
+		os.sleep(10)
+	end
+
+	refuel.maintainLevel(1000)
+
+	turtle.select(2)
+
+	-- find index
+	local flag = false
+	local location = 2
+	for i=3,16,1 do
+		if turtle.compareTo(i) then
+			flag = true
+			location = i
+			break
+		end
+	end
+
+	location = location - 1
+
+	local height = math.floor(location/2)
+	local column = location % 2
+
+	print("Height:",height, " column:",column)
+
+	for i=1,height,1 do
+		turtle.up()
+	end
+
+	turtle.turnLeft()
+	if column == 1 then
+		turtle.turnLeft()
+	end
+
+	if not turtle.drop() then
+		turtle.dropUp()
+	end
+
+	turtle.turnRight()
+	if column == 1 then
+		turtle.turnRight()
+	end
+
+	for i=1,height,1 do
+		turtle.down()
+	end
+
+	if turtle.getItemCount(2) > 0 then
+		turtle.select(2)
+		turtle.drop()
+	end
+
+	for i=3,16,1 do
+		if turtle.getItemCount(i) > 1 then
+			turtle.select(i)
+			turtle.drop(turtle.getItemCount(i)-1)
+		end
+	end
+end

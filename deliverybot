@@ -1,4 +1,6 @@
 os.loadAPI("/rom/mcarver/navi")
+os.loadAPI("/rom/mcarver/refuel")
+os.loadAPI("/rom/mcarver/modemhelp")
 
 local DELIVERY_NETWORK = 2000
 
@@ -18,37 +20,7 @@ local itemName = tArgs[1]
 
 print("Sharing ", itemName)
 
-function configureModem(networkId)
-	local modem = nil
-	local modem_side = nil
-
-	for n,sSide in ipairs( rs.getSides() ) do
-		if peripheral.getType( sSide ) == "modem" and peripheral.call( sSide, "isWireless" ) then	
-			modem_side = sSide
-			modem = peripheral.wrap(sSide)
-			print("Found modem on ", sSide, " side.")
-			break
-		end
-	end
-
-	if modem == nil then
-		print("Could not find modem!")
-		return
-	end
-
-	if not modem.isOpen(networkId ) then
-		print( "Opening ",networkId," channel modem" )
-		modem.open(networkId)
-	end
-
-	return modem, modem_side
-end
-
 function listRequest(modem, sReplyChannel, nameRequest)
-	-- update inventory
-	turtle.select(2)
-	turtle.suck()
-
 	-- count items
 	local itemCount = turtle.getItemCount(2)
 
@@ -68,12 +40,14 @@ function listRequest(modem, sReplyChannel, nameRequest)
 end
 
 function deliveryRequest(modem, sReplyChannel, x, y, z)
+	turtle.select(1)
+	while turtle.suck() do
+		os.sleep(0.5)
+	end
+	
 	-- store current position
 	local oh = navi.findHeading()
 	local xo,yo,zo = gps.locate(5)
-
-	turtle.select(2)
-	turtle.suck()
 
 	-- fly to target
 	navi.goto(x,y,z)
@@ -82,20 +56,39 @@ function deliveryRequest(modem, sReplyChannel, x, y, z)
 	turtle.select(2)
 	turtle.dropDown()
 
+	turtle.up()
+	turtle.up()
+	turtle.up()
+	turtle.up()
+
 	-- tell client that we are done
 	modem.transmit( sReplyChannel, DELIVERY_NETWORK, 
-		textutils.serialize({"complete"}))
+		textutils.serialize({"complete", os.getComputerID()}))
 
 	-- fly home
 	navi.goto(xo,yo,zo)
 	navi.setHeading(oh)
+
+	refuel.maintainLevel(1000)
+
+	turtle.select(1)
+	while turtle.suck() do
+		os.sleep(0.5)
+	end
 end
 
 function startServer()
+	refuel.maintainLevel(1000)
+
+	turtle.select(1)
+	while turtle.suck() do
+		os.sleep(0.5)
+	end
+
 	local modem = nil
 	local modem_side = nil
 
-	modem, modem_side = configureModem(DELIVERY_NETWORK)
+	modem, modem_side = modemhelp.configureModem(DELIVERY_NETWORK)
 
 	print("Listening for requests")
 	while true do

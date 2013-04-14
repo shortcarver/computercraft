@@ -24,9 +24,10 @@ function listClients(itemName)
 			if sSide == modem_side and sChannel == myId then
 				local tResult = textutils.unserialize( sMessage )
 
-				response = tResult
-
-				break;
+				if tResult[2] == itemName then
+					response = tResult
+					break
+				end
 			end
 		elseif e == "timer" then
 			-- We received a timeout
@@ -37,12 +38,12 @@ function listClients(itemName)
 		end
 	end
 
+	modem.close(myId)
+
 	if response == nil then
 		print("Crap... didn't find anything")
 		return nil
 	end
-
-	modem.close(myId)
 
 	return response[1],response[2],response[3],response[4],response[5],response[6]
 end
@@ -71,8 +72,13 @@ function requestDelivery(targetId)
 			-- We received a message from a modem
 			local sSide, sChannel, sReplyChannel, sMessage, nDistance = p1, p2, p3, p4, p5
 			if sSide == modem_side and sChannel == myId then
-				gotmsg = true
-				break
+
+				local tResult = textutils.unserialize( sMessage )
+
+				if tResult[1] == "complete" and tResult[2] == targetId then
+					gotmsg = true
+					break
+				end
 			end
 		elseif e == "timer" then
 			-- We received a timeout
@@ -86,4 +92,14 @@ function requestDelivery(targetId)
 	modem.close(myId)
 
 	return gotmsg
+end
+
+
+function orderItem(itemName)
+	local computerId = dbc.listClients(itemName)
+
+	if computerId ~= nil then
+		return dbc.requestDelivery(computerId)
+	end
+	return false
 end

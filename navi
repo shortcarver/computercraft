@@ -49,6 +49,36 @@ function findHeading()
 	return heading
 end
 
+function back()
+	return turtle.back()
+end
+
+function forward()
+	return turtle.forward()
+end
+
+function up()
+	return turtle.up()
+end
+
+function down()
+	return turtle.down()
+end
+
+function right()
+	turnRight()
+	local flag = forward()
+	turnLeft()
+	return flag
+end
+
+function left()
+	turnLeft()
+	local flag = forward()
+	turnRight()
+	return flag
+end
+
 function turnRight()
 	turtle.turnRight()
 	heading = (heading + 1) % 4
@@ -93,7 +123,13 @@ function moveToX(x)
 	end
 
 	while xc ~= x do
-		turtle.forward()
+		if not forward() then
+			if right() then
+				right()
+			elseif left() then
+				left()
+			end
+		end
 		xc, yc, zc = gps.locate(5)
 	end
 end
@@ -112,7 +148,13 @@ function moveToZ(z)
 	end
 
 	while zc ~= z do
-		turtle.forward()
+		if not forward() then
+			if right() then
+				right()
+			elseif left() then
+				left()
+			end
+		end
 		xc, yc, zc = gps.locate(5)
 	end
 end
@@ -121,31 +163,149 @@ function moveToY(y)
 	local xc, yc, zc = gps.locate(5)
 
 	while y > yc do
-		turtle.up()
+		if not up() then
+			if right() then
+				right()
+			elseif left() then
+				left()
+			elseif forward() then
+				forward()
+			elseif back() then
+				back()
+			end
+		end
 		xc, yc, zc = gps.locate(5)
 	end
 
 	while y < yc do
-		turtle.down()
+		if not down() then
+			if right() then
+				right()
+			elseif left() then
+				left()
+			elseif forward() then
+				forward()
+			elseif back() then
+				back()
+			end
+		end
 		xc, yc, zc = gps.locate(5)
 	end
 end
 
 
-function goto(x,y,z)
+function dumbGoto(x,y,z)
 	moveToY(85)
 
 	local xc, yc, zc = gps.locate(5)
+	while x ~= xc or y ~= yc or z ~= zc do
 
-	if math.abs(xc-x) < math.abs(zc-z) then
-		moveToX(x)
-		moveToZ(z)
-	else
-		moveToZ(z)
-		moveToX(x)
+		if math.abs(xc-x) < math.abs(zc-z) then
+			moveToX(x)
+			moveToZ(z)
+		else
+			moveToZ(z)
+			moveToX(x)
+		end
+
+		moveToY(y)
+
+		xc, yc, zc = gps.locate(5)
+	end
+end
+
+
+-- 3 x+
+-- 1 x-
+-- 0 z+
+-- 2 z-
+
+function smartGoto(x,y,z)
+
+	local found = false
+	while not found do
+		local sx,sy,sz = gps.locate(5)
+
+		if sx == x and sy == y and sz == z then
+			return
+		end
+
+		local xgood = true
+		local zgood = true
+		local ygood = true
+	
+		while xgood do
+			sx,sy,sz = gps.locate(5)
+			-- nudge in x direction
+			if sx < x then
+				setHeading(3)
+				xgood = forward()
+			elseif sx > x then
+				setHeading(1)
+				xgood = forward()
+			else
+				break
+			end
+
+			if not xgood then
+				print("not x")
+				up()
+				if right() then
+					right()
+				else
+					left()
+					left()
+				end
+			end
+
+			if sy < y then
+				ygood = up()
+			elseif sy > y then
+				ygood = down()
+			end
+
+		end
+		
+		while zgood do
+			sx,sy,sz = gps.locate(5)
+			if sz < z then
+				setHeading(0)
+				zgood = forward()
+			elseif sz > z then
+				setHeading(2)
+				zgood = forward()
+			else
+				break
+			end
+
+			if not zgood then
+				print("not z")
+				up()
+				if right() then
+					right()
+				else
+					left()
+					left()
+				end
+			end
+
+			if sy < y then
+				ygood = up()
+			elseif sy > y then
+				ygood = down()
+			end
+
+		end
+
+						
 	end
 
-	moveToY(y)
+end
+
+
+function goto(x,y,z)
+	dumbGoto(x,y,z)
+	-- smartGoto(x,y,z)
 end
 
 -- goto(101,74,188)

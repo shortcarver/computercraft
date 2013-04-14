@@ -1,15 +1,5 @@
-os.loadAPI("/rom/mcarver/itemgrabber")
-
-function doRefuel()
-  while turtle.getFuelLevel() < 1000 and turtle.getItemCount(1) > 0 do
-    turtle.select(1)
-    turtle.refuel(1)
-  end
-
-  if turtle.getItemCount(1) <= 10 then
-	itemgrabber.grabItem("charcoal", 1)
-  end
-end
+os.loadAPI("/rom/mcarver/refuel")
+os.loadAPI("/rom/mcarver/dbc")
 
 function toTree()
   turtle.up()
@@ -81,14 +71,14 @@ end
 
 function checkSapplings()
 	if turtle.getItemCount(2) <= 1 then
-		itemgrabber.grabItem("sapplings", 2)
+		dbc.orderItem("sapplings")
 	end
 end
 
 local waitTime = 60
 
 while true do
-  doRefuel()
+  refuel.maintainLevel(1000)
   checkSapplings()
   toTree()
   if checkTree() == true then
