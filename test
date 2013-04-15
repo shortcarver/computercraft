@@ -1,28 +1,28 @@
 function doRefuel()
-  if turtle.getFuelLevel() <= 1 then
-    turtle.select(1)
-    turtle.refuel(1)
-  end
+	if turtle.getFuelLevel() <= 1 then
+		turtle.select(1)
+		turtle.refuel(1)
+	end
 end
 
 function moveDown()
-  while turtle.detectDown() == false do
-    doRefuel()
-    turtle.down()
-  end
+	while turtle.detectDown() == false do
+		doRefuel()
+		turtle.down()
+	end
 end
 
 function dumpExtra()
-  if turtle.getItemCount(6) > 0 then
-    turtle.select(6)
-    turtle.dropUp()
-  end
+	if turtle.getItemCount(6) > 0 then
+		turtle.select(6)
+		turtle.dropUp()
+	end
 end
 
 moveDown()
 dumpExtra()
 
 while turtle.digDown() == true do
-  moveDown()
-  dumpExtra()
+	moveDown()
+	dumpExtra()
 end

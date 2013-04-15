@@ -1,15 +1,13 @@
-os.loadAPI("/rom/mcarver/modemhelp")
-
 local DELIVERY_NETWORK = 2000
 
-function listClients(itemName)
+function find(itemName)
 	local modem = nil
 	local modem_side = nil
-	local myId = DELIVERY_NETWORK + os.getComputerID()
+	local myNetworkId = DELIVERY_NETWORK + os.getComputerID()
 	
-	modem, modem_side = modemhelp.configureModem(myId)
+	modem, modem_side = modemhelp.configureModem(myNetworkId)
 
-	modem.transmit(DELIVERY_NETWORK,myId,
+	modem.transmit(DELIVERY_NETWORK, myNetworkId,
 		textutils.serialize({"list",itemName}))
 
 	local timeout = os.startTimer( 5 )
@@ -21,7 +19,7 @@ function listClients(itemName)
 		if e == "modem_message" then
 			-- We received a message from a modem
 			local sSide, sChannel, sReplyChannel, sMessage, nDistance = p1, p2, p3, p4, p5
-			if sSide == modem_side and sChannel == myId then
+			if sSide == modem_side and sChannel == myNetworkId then
 				local tResult = textutils.unserialize( sMessage )
 
 				if tResult[2] == itemName then
@@ -38,7 +36,7 @@ function listClients(itemName)
 		end
 	end
 
-	modem.close(myId)
+	modem.close(myNetworkId)
 
 	if response == nil then
 		print("Crap... didn't find anything")
@@ -48,18 +46,18 @@ function listClients(itemName)
 	return response[1],response[2],response[3],response[4],response[5],response[6]
 end
 
-function requestDelivery(targetId)
+function get(targetId, targetCount)
 
 	local x,y,z = gps.locate(5)
 
 	local modem = nil
 	local modem_side = nil
-	local myId = DELIVERY_NETWORK + os.getComputerID()
+	local myNetworkId = DELIVERY_NETWORK + os.getComputerID()
 	
-	modem, modem_side = modemhelp.configureModem(myId)
+	modem, modem_side = modemhelp.configureModem(myNetworkId)
 
-	modem.transmit(DELIVERY_NETWORK,myId,
-		textutils.serialize({"deliver",targetId,x,y+1,z}))
+	modem.transmit(DELIVERY_NETWORK,myNetworkId,
+		textutils.serialize({"deliver",targetId,targetCount,x,y+1,z}))
 
 
 	timeout = os.startTimer( 60 )
@@ -71,7 +69,7 @@ function requestDelivery(targetId)
 		if e == "modem_message" then
 			-- We received a message from a modem
 			local sSide, sChannel, sReplyChannel, sMessage, nDistance = p1, p2, p3, p4, p5
-			if sSide == modem_side and sChannel == myId then
+			if sSide == modem_side and sChannel == myNetworkId then
 
 				local tResult = textutils.unserialize( sMessage )
 
@@ -89,17 +87,17 @@ function requestDelivery(targetId)
 		end
 	end
 
-	modem.close(myId)
+	modem.close(myNetworkId)
 
 	return gotmsg
 end
 
 
-function orderItem(itemName)
-	local computerId = dbc.listClients(itemName)
+function orderItem(itemName, count)
+	local computerId = deliverybot.find(itemName)
 
 	if computerId ~= nil then
-		return dbc.requestDelivery(computerId)
+		return deliverybot.get(computerId, count)
 	end
 	return false
 end

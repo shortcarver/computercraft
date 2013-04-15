@@ -1,6 +1,5 @@
 local REQUEST_CHANNEL = 1000
 
-
 local function printUsage()
 	print( "Usages:" )
 	print( "shareitem name" )
@@ -14,29 +13,12 @@ end
 
 local itemName = tArgs[1]
 
-
 print("Sharing ", itemName)
 
 local modem = nil
 local modem_side = nil
-for n,sSide in ipairs( rs.getSides() ) do
-	if peripheral.getType( sSide ) == "modem" and peripheral.call( sSide, "isWireless" ) then	
-		modem_side = sSide
-		modem = peripheral.wrap(sSide)
-		print("Found modem on ", sSide, " side.")
-		break
-	end
-end
 
-if modem == nil then
-	print("Could not find modem!")
-	return
-end
-
-if not modem.isOpen( REQUEST_CHANNEL ) then
-	print( "Opening REQUEST channel modem" )
-	modem.open( REQUEST_CHANNEL )
-end
+modem, modem_side = modemhelp.configureModem(REQUEST_CHANNEL)
 
 function getGPS()
 	local posX, posY, posZ = gps.locate(5)
@@ -50,7 +32,9 @@ while true do
 	if e == "modem_message" then
 		-- We received a message from a modem
 		local sSide, sChannel, sReplyChannel, sMessage, nDistance = p1, p2, p3, p4, p5
+
 		if sSide == modem_side and sChannel == REQUEST_CHANNEL and sMessage == itemName then
+
 			-- we recieved a request for something we serve
 			print("Recieved request for ", itemName)
 
@@ -74,7 +58,8 @@ while true do
 				local posX, posY, posZ = getGPS()
 				print("Location: (",posX,",",posY,",",posZ,")")
 
-				modem.transmit( sReplyChannel, REQUEST_CHANNEL, textutils.serialize({itemName,itemCount,posX,posY,posZ}) )
+				modem.transmit( sReplyChannel, REQUEST_CHANNEL, 
+					textutils.serialize({itemName,itemCount,posX,posY,posZ}) )
 			end
 
 		elseif sSide == modem_side and sChannel == REQUEST_CHANNEL and sMessage == "list" then

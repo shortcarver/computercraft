@@ -1,61 +1,61 @@
 function doRefuel()
-  while turtle.getFuelLevel() < 500 do
-    turtle.select(1)
-    turtle.refuel(1)
-  end
+	while turtle.getFuelLevel() < 500 do
+		turtle.select(1)
+		turtle.refuel(1)
+	end
 end
 
 function pickCobble()
-  for i = 9,16,1 do
-    if turtle.getItemCount(i) > 0 then
-      turtle.select(i)
-      return
-    end
-  end
+	for i = 9,16,1 do
+		if turtle.getItemCount(i) > 0 then
+			turtle.select(i)
+			return
+		end
+	end
 end
 
 function pickPlate()
-  turtle.select(2)
+	turtle.select(2)
 end
 
 function pickRedStone()
-  turtle.select(3)
+	turtle.select(3)
 end
 
 function pickPiston()
-  turtle.select(4)
+	turtle.select(4)
 end
 
 function buildTrap()
-  pickCobble()
-  turtle.forward()
-  turtle.placeDown()
-  turtle.place()
-  turtle.up()
-  pickPiston()
-  turtle.place()
-  pickRedStone()
-  turtle.placeDown()
-  turtle.back()
-  pickCobble()
-  turtle.place()
-  pickPlate()
-  turtle.placeDown()
-  turtle.up()
-  turtle.forward()
-  pickCobble()
-  turtle.place()
-  turtle.up()
-  
-  turtle.placeDown()
-  turtle.up()
-  turtle.placeDown()
+	pickCobble()
+	turtle.forward()
+	turtle.placeDown()
+	turtle.place()
+	turtle.up()
+	pickPiston()
+	turtle.place()
+	pickRedStone()
+	turtle.placeDown()
+	turtle.back()
+	pickCobble()
+	turtle.place()
+	pickPlate()
+	turtle.placeDown()
+	turtle.up()
+	turtle.forward()
+	pickCobble()
+	turtle.place()
+	turtle.up()
+
+	turtle.placeDown()
+	turtle.up()
+	turtle.placeDown()
 end
 
 
 for i=0,10,1 do
-  doRefuel()
-  buildTrap()
+	doRefuel()
+	buildTrap()
 end
 
 

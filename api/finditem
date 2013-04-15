@@ -1,40 +1,14 @@
 local REQUEST_CHANNEL = 1000
 
 
-function configureModem()
-	local modem = nil
-	local modem_side = nil
-
-	for n,sSide in ipairs( rs.getSides() ) do
-		if peripheral.getType( sSide ) == "modem" and peripheral.call( sSide, "isWireless" ) then	
-			modem_side = sSide
-			modem = peripheral.wrap(sSide)
-			print("Found modem on ", sSide, " side.")
-			break
-		end
-	end
-
-	if modem == nil then
-		print("Could not find modem!")
-		return
-	end
-
-	if not modem.isOpen( REQUEST_CHANNEL + os.getComputerID() ) then
-		print( "Opening ", REQUEST_CHANNEL + os.getComputerID()," channel modem" )
-		modem.open( REQUEST_CHANNEL + os.getComputerID() )
-	end
-
-	return modem, modem_side
-end
-
-
 function find(itemName)
 	local modem = nil
 	local modem_side = nil
+	local myNetworkId = REQUEST_CHANNEL + os.getComputerID()
 	
-	modem, modem_side = configureModem()
+	modem, modem_side = modemhelp.configureModem(myNetworkId)
 
-	modem.transmit(REQUEST_CHANNEL,(REQUEST_CHANNEL+os.getComputerID()),itemName)
+	modem.transmit(REQUEST_CHANNEL,myNetworkId,itemName)
 
 	local timeout = os.startTimer( 5 )
 
@@ -43,11 +17,11 @@ function find(itemName)
 		if e == "modem_message" then
 			-- We received a message from a modem
 			local sSide, sChannel, sReplyChannel, sMessage, nDistance = p1, p2, p3, p4, p5
-			if sSide == modem_side and sChannel == (REQUEST_CHANNEL+os.getComputerID()) then
+			if sSide == modem_side and sChannel == myNetworkId then
 				local tResult = textutils.unserialize( sMessage )
 
 				print("finditem:",tResult[1],",", tResult[2],",", tResult[3],",", tResult[4],",", tResult[5])
-				modem.close(REQUEST_CHANNEL + os.getComputerID())
+				modem.close(myNetworkId)
 				return tResult[1], tResult[2], tResult[3], tResult[4], tResult[5]
 			end
 		elseif e == "timer" then
@@ -58,17 +32,18 @@ function find(itemName)
 			end
 		end
 	end
-	modem.close(REQUEST_CHANNEL + os.getComputerID())
+	modem.close(myNetworkId)
 	return nil
 end
 
 function list()
 	local modem = nil
 	local modem_side = nil
+	local myNetworkId = REQUEST_CHANNEL + os.getComputerID()
 	
-	modem, modem_side = configureModem()
+	modem, modem_side = modemhelp.configureModem(myNetworkId)
 
-	modem.transmit(REQUEST_CHANNEL, REQUEST_CHANNEL+os.getComputerID(), "list")
+	modem.transmit(REQUEST_CHANNEL, myNetworkId, "list")
 
 
 	local itemList = {}
@@ -81,7 +56,7 @@ function list()
 		if e == "modem_message" then
 			-- We received a message from a modem
 			local sSide, sChannel, sReplyChannel, sMessage, nDistance = p1, p2, p3, p4, p5
-			if sSide == modem_side and sChannel == (REQUEST_CHANNEL+os.getComputerID()) then
+			if sSide == modem_side and sChannel == myNetworkId then
 
 				print(sMessage)
 

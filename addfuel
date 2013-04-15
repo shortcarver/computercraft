@@ -1,9 +1,9 @@
 while true do
-  turtle.suckDown()
-  local count = turtle.getItemCount(1)
-  if count > 1 then
-    turtle.drop(count-1)
-  end
-  os.sleep(80)
+	turtle.suckDown()
+	local count = turtle.getItemCount(1)
+	if count > 1 then
+		turtle.drop(count-1)
+	end
+	os.sleep(80)
 end
 

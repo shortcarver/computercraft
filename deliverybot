@@ -1,7 +1,3 @@
-os.loadAPI("/rom/mcarver/navi")
-os.loadAPI("/rom/mcarver/refuel")
-os.loadAPI("/rom/mcarver/modemhelp")
-
 local DELIVERY_NETWORK = 2000
 
 -- startup stuff
@@ -22,7 +18,10 @@ print("Sharing ", itemName)
 
 function listRequest(modem, sReplyChannel, nameRequest)
 	-- count items
-	local itemCount = turtle.getItemCount(2)
+	local itemCount = 0
+	for i=2,16,1 do
+		itemCount = itemCount + turtle.getItemCount(i)
+	end
 
 
 	print("I have ", itemCount," items.")
@@ -39,12 +38,22 @@ function listRequest(modem, sReplyChannel, nameRequest)
 	end
 end
 
-function deliveryRequest(modem, sReplyChannel, x, y, z)
+function deliveryRequest(modem, sReplyChannel, requestCount, x, y, z)
+	refuel.run(1000)
 	turtle.select(1)
 	while turtle.suck() do
 		os.sleep(0.5)
 	end
 	
+	local itemCount = 0
+	for i=2,16,1 do
+		itemCount = itemCount + turtle.getItemCount(i)
+	end
+
+	if requestCount > itemCount then
+		requestCount = itemCount
+	end
+
 	-- store current position
 	local oh = navi.findHeading()
 	local xo,yo,zo = gps.locate(5)
@@ -53,9 +62,24 @@ function deliveryRequest(modem, sReplyChannel, x, y, z)
 	navi.goto(x,y,z)
 
 	-- drop items
-	turtle.select(2)
-	turtle.dropDown()
+	for i=2,16,1 do
+		if turtle.getItemCount(i) > 0 then
+			turtle.select(i)
 
+			if requestCount > turtle.getItemCount(i) then
+				turtle.dropDown()
+				requestCount = requestCount - turtle.getItemCount(i)
+			else
+				turtle.dropDown(requestCount)
+				requestCount = 0
+			end
+		end
+
+		if requestCount == 0 then
+			break
+		end
+	end
+			
 	turtle.up()
 	turtle.up()
 	turtle.up()
@@ -69,7 +93,7 @@ function deliveryRequest(modem, sReplyChannel, x, y, z)
 	navi.goto(xo,yo,zo)
 	navi.setHeading(oh)
 
-	refuel.maintainLevel(1000)
+	refuel.run(1000)
 
 	turtle.select(1)
 	while turtle.suck() do
@@ -78,7 +102,7 @@ function deliveryRequest(modem, sReplyChannel, x, y, z)
 end
 
 function startServer()
-	refuel.maintainLevel(1000)
+	refuel.run(1000)
 
 	turtle.select(1)
 	while turtle.suck() do
@@ -103,7 +127,7 @@ function startServer()
 				if tResult[1] == "list" then
 					listRequest(modem, sReplyChannel, tResult[2])
 				elseif tResult[1] == "deliver" and tResult[2] == os.getComputerID() then
-					deliveryRequest(modem, sReplyChannel, tResult[3], tResult[4], tResult[5])
+					deliveryRequest(modem, sReplyChannel, tResult[3], tResult[4], tResult[5], tResult[6])
 				end
 			end
 		end

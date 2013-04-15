@@ -17,7 +17,7 @@ function configureModem(networkId)
 	end
 
 	if not modem.isOpen(networkId) then
-		print( "Opening ",networkId," channel modem" )
+		print("Opening ",networkId," channel modem on side ",modem_side)
 		modem.open(networkId)
 	end
 

@@ -1,9 +1,7 @@
 -- pulls stuff from the chest it is next to, and deposits it in the pool
-os.loadAPI("/rom/mcarver/navi")
-os.loadAPI("/rom/mcarver/refuel")
 
 while true do
-	refuel.maintainLevel(1000)
+	refuel.run(1000)
 
 	-- pick up everything
 	turtle.select(2)

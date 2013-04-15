@@ -1,8 +1,4 @@
-os.loadAPI("/rom/mcarver/navi")
-os.loadAPI("/rom/mcarver/finditem")
-
-function grabItem(itemName, slot)
-
+function get(itemName, slot)
 	-- store old position
 	print("Store position")
 	local oh = navi.findHeading()

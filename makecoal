@@ -1,10 +1,10 @@
 turtle.select(1)
 while true do
-  turtle.suck()
-  if turtle.getItemCount(1) > 8 then
-    turtle.dropDown(8)
-  end
+	turtle.suck()
+	if turtle.getItemCount(1) > 8 then
+		turtle.dropDown(8)
+	end
 
-  os.sleep(80)
+	os.sleep(80)
 end
 

@@ -79,6 +79,26 @@ function left()
 	return flag
 end
 
+function right2()
+	turnRight()
+	local flag = forward()
+	if flag then
+		flag = forward()
+	end
+	turnLeft()
+	return flag
+end
+
+function left2()
+	turnLeft()
+	local flag = forward()
+	if flag then
+		flag = forward()
+	end
+	turnRight()
+	return flag
+end
+
 function turnRight()
 	turtle.turnRight()
 	heading = (heading + 1) % 4
@@ -86,7 +106,7 @@ end
 
 function turnLeft()
 	turtle.turnLeft()
-	heading = ((heading -1) + 4) % 4
+	heading = ((heading - 1) + 4) % 4
 end
 
 function setHeading(target)
@@ -124,10 +144,8 @@ function moveToX(x)
 
 	while xc ~= x do
 		if not forward() then
-			if right() then
-				right()
-			elseif left() then
-				left()
+			if right2() then
+			elseif left2() then
 			end
 		end
 		xc, yc, zc = gps.locate(5)
@@ -149,10 +167,8 @@ function moveToZ(z)
 
 	while zc ~= z do
 		if not forward() then
-			if right() then
-				right()
-			elseif left() then
-				left()
+			if right2() then
+			elseif left2() then
 			end
 		end
 		xc, yc, zc = gps.locate(5)
@@ -164,10 +180,8 @@ function moveToY(y)
 
 	while y > yc do
 		if not up() then
-			if right() then
-				right()
-			elseif left() then
-				left()
+			if right2() then
+			elseif left2() then
 			elseif forward() then
 				forward()
 			elseif back() then
@@ -179,10 +193,8 @@ function moveToY(y)
 
 	while y < yc do
 		if not down() then
-			if right() then
-				right()
-			elseif left() then
-				left()
+			if right2() then
+			elseif left2() then
 			elseif forward() then
 				forward()
 			elseif back() then

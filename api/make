@@ -1,0 +1,31 @@
+function move(s,c,d)
+	turtle.select(s)
+	turtle.dropDown(c)
+	turtle.select(d)
+	turtle.suckDown()
+end
+
+function buildall()
+	turtle.select(16)
+	while turtle.craft() do
+		turtle.drop()
+	end
+end
+
+function box(count)
+	deliverybot.orderItem("planks", count * 8)
+	move(1,count,2)
+	move(1,count,3)
+	move(1,count,5)
+	move(1,count,7)
+	move(1,count,9)
+	move(1,count,10)
+	move(1,count,11)
+	buildall()
+end
+
+function planks(count)
+	deliverybot.orderItem("wood", math.ceil(count / 2))
+
+	buildall()
+end
