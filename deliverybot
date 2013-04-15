@@ -13,11 +13,17 @@ if #tArgs < 1 then
 end
 
 local itemName = tArgs[1]
+local messageQueue = {}
 
 print("Sharing ", itemName)
 
-function listRequest(modem, sReplyChannel, nameRequest)
+function listRequest(modem, clientId, nameRequest)
 	-- count items
+	turtle.select(1)
+	while turtle.suck() do
+		os.sleep(0.5)
+	end
+
 	local itemCount = 0
 	for i=2,16,1 do
 		itemCount = itemCount + turtle.getItemCount(i)
@@ -28,22 +34,26 @@ function listRequest(modem, sReplyChannel, nameRequest)
 	if itemCount == 0 then
 		print("No items available, not replying")
 	else
-		print("Sending to ", sReplyChannel)
+		print("Sending to ", clientId)
 
 		local posX, posY, posZ = gps.locate(5)
 		print("Location: (",posX,",",posY,",",posZ,")")
 
-		modem.transmit( sReplyChannel, DELIVERY_NETWORK, 
-			textutils.serialize({os.getComputerID(),itemName,itemCount,posX,posY,posZ}))
+		modem.transmit( clientId, DELIVERY_NETWORK, 
+			textutils.serialize({
+				"list_resp",
+				os.getComputerID(),
+				itemName,
+				itemCount,
+				posX,
+				posY,
+				posZ}
+			))
 	end
 end
 
-function deliveryRequest(modem, sReplyChannel, requestCount, x, y, z)
+function doDelivery(modem,clientId,requestCount, x,y,z)
 	refuel.run(1000)
-	turtle.select(1)
-	while turtle.suck() do
-		os.sleep(0.5)
-	end
 	
 	local itemCount = 0
 	for i=2,16,1 do
@@ -53,10 +63,6 @@ function deliveryRequest(modem, sReplyChannel, requestCount, x, y, z)
 	if requestCount > itemCount then
 		requestCount = itemCount
 	end
-
-	-- store current position
-	local oh = navi.findHeading()
-	local xo,yo,zo = gps.locate(5)
 
 	-- fly to target
 	navi.goto(x,y,z)
@@ -86,8 +92,37 @@ function deliveryRequest(modem, sReplyChannel, requestCount, x, y, z)
 	turtle.up()
 
 	-- tell client that we are done
-	modem.transmit( sReplyChannel, DELIVERY_NETWORK, 
+	modem.transmit( clientId, DELIVERY_NETWORK, 
 		textutils.serialize({"complete", os.getComputerID()}))
+end
+
+function deliveryRequest(modem, clientId, requestCount, x, y, z)
+	turtle.select(1)
+	while turtle.suck() do
+		os.sleep(0.5)
+	end
+
+	-- store home position
+	local oh = navi.findHeading()
+	local xo,yo,zo = gps.locate(5)
+
+	while true do
+		doDelivery(modem, clientId, requestCount, x, y, z)
+		-- check for more requests
+		if #messageQueue == 0 then
+			break
+		end
+
+		-- one more request
+		local pair = table.remove(messageQueue, 0)
+
+		clientId = pair[1]
+		local packet = pair[2]
+		requestCount = packet[3]
+		x = packet[4]
+		y = packet[5]
+		z = packet[6]
+	end
 
 	-- fly home
 	navi.goto(xo,yo,zo)
@@ -101,7 +136,7 @@ function deliveryRequest(modem, sReplyChannel, requestCount, x, y, z)
 	end
 end
 
-function startServer()
+function networkServer()
 	refuel.run(1000)
 
 	turtle.select(1)
@@ -115,23 +150,37 @@ function startServer()
 	modem, modem_side = modemhelp.configureModem(DELIVERY_NETWORK)
 
 	print("Listening for requests")
+
 	while true do
-		local e, p1, p2, p3, p4, p5 = os.pullEvent()
-		if e == "modem_message" then
-			-- We received a message from a modem
-			local sSide, sChannel, sReplyChannel, sMessage, nDistance = p1, p2, p3, p4, p5
+		local replyId, message = modemhelp.waitForPacket(modem, DELIVERY_NETWORK)
 
-			if sSide == modem_side and sChannel == DELIVERY_NETWORK then
-				local tResult = textutils.unserialize( sMessage )
+		local packet = textutils.unserialize(message)
+		
+		-- this can be done instantly, so do it
+		if packet[1] == "list" then
+			listRequest(modem, replyId, packet[2])
 
-				if tResult[1] == "list" then
-					listRequest(modem, sReplyChannel, tResult[2])
-				elseif tResult[1] == "deliver" and tResult[2] == os.getComputerID() then
-					deliveryRequest(modem, sReplyChannel, tResult[3], tResult[4], tResult[5], tResult[6])
-				end
-			end
+		-- others need to be handled in the other thread
+		elseif packet[2] == os.getComputerID() then
+			table.insert(messageQueue, {replyId, packet})
 		end
 	end
 end
+
+function handleQueue
+	while true do
+		if #messageQueue > 0 then
+			local pair = table.remove(messageQueue, 0)
+
+			local replyId = pair[1]
+			local packet = pair[2]
+
+			deliveryRequest(modem, replyId, packet[3], packet[4], packet[5], packet[6])
+		end
+
+		os.sleep(1)
+	end
+end
+
 
 startServer()

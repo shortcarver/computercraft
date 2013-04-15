@@ -1,0 +1,23 @@
+function timer()
+	local timeout = os.startTimer(5)
+
+	while true do
+		local e,p1,p2,p3,p4,p5 = os.pullEvent()
+		if e == "timer" then
+			local t = p1
+			if t == timeout then
+				print("tick")
+				timeout = os.startTimer(5)
+			end
+		end
+	end
+end
+
+function otherStuff()
+	while true do
+		print("main")
+		os.sleep(1)
+	end
+end
+
+parallel.waitForAny(timer, otherStuff)

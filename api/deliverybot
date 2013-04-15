@@ -10,40 +10,18 @@ function find(itemName)
 	modem.transmit(DELIVERY_NETWORK, myNetworkId,
 		textutils.serialize({"list",itemName}))
 
-	local timeout = os.startTimer( 5 )
-	local response = nil
+	local replyId, message = modemhelp.waitForPacketTimeout(modem, myNetworkId, 2)
 
-	-- wait for list
-	while true do
-		local e, p1, p2, p3, p4, p5 = os.pullEvent()
-		if e == "modem_message" then
-			-- We received a message from a modem
-			local sSide, sChannel, sReplyChannel, sMessage, nDistance = p1, p2, p3, p4, p5
-			if sSide == modem_side and sChannel == myNetworkId then
-				local tResult = textutils.unserialize( sMessage )
-
-				if tResult[2] == itemName then
-					response = tResult
-					break
-				end
-			end
-		elseif e == "timer" then
-			-- We received a timeout
-			local timer = p1
-			if timer == timeout then
-				break
-			end
-		end
-	end
-
-	modem.close(myNetworkId)
-
-	if response == nil then
+	if replyId == nil then
 		print("Crap... didn't find anything")
 		return nil
 	end
 
-	return response[1],response[2],response[3],response[4],response[5],response[6]
+	response = textutils.unserialize(message)
+
+	modem.close(myNetworkId)
+
+	return response[2],response[3],response[4],response[5],response[6],response[7]
 end
 
 function get(targetId, targetCount)
@@ -58,38 +36,24 @@ function get(targetId, targetCount)
 
 	modem.transmit(DELIVERY_NETWORK,myNetworkId,
 		textutils.serialize({"deliver",targetId,targetCount,x,y+1,z}))
-
-
-	timeout = os.startTimer( 60 )
-	local gotmsg = false
-
-	-- wait for complete message
-	while true do
-		local e, p1, p2, p3, p4, p5 = os.pullEvent()
-		if e == "modem_message" then
-			-- We received a message from a modem
-			local sSide, sChannel, sReplyChannel, sMessage, nDistance = p1, p2, p3, p4, p5
-			if sSide == modem_side and sChannel == myNetworkId then
-
-				local tResult = textutils.unserialize( sMessage )
-
-				if tResult[1] == "complete" and tResult[2] == targetId then
-					gotmsg = true
-					break
-				end
-			end
-		elseif e == "timer" then
-			-- We received a timeout
-			local timer = p1
-			if timer == timeout then
-				break
-			end
-		end
-	end
+	
+	local replyId, message = modemhelp.waitForPacketTimeout(modem, myNetworkId, 60)
 
 	modem.close(myNetworkId)
+	
 
-	return gotmsg
+	if replyId == nil then
+		print("Crap... didn't find anything")
+		return false
+	end
+
+	response = textutils.unserialize(message)
+
+	if response[1] == "complete" and reponse[2] == targetId then
+		return true
+	end
+
+	return false
 end
 
 

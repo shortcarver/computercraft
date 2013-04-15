@@ -1,0 +1,18 @@
+["deliverybot",[command],replyNetworkId,parameters]
+
+networkid = 1000
+
+cid = networkid + client_computer_id
+sid = server_computer_id
+
+
+
+c > 1000 [list,charcoal]
+
+s > cid, [list_resp, sid, item, count, x, y, z]
+
+c > 1000, [deliver, sid, count, x, y, z]
+
+s > cid, [complete, sid]
+
+

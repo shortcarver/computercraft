@@ -24,3 +24,37 @@ function configureModem(networkId)
 	return modem, modem_side
 end
 
+
+function waitForPacket(modem, networkId)
+	while true do
+		local e, p1, p2, p3, p4, p5 = os.pullEvent()
+		if e == "modem_message" then
+			-- We received a message from a modem
+			local sSide, sChannel, sReplyChannel, sMessage, nDistance = p1, p2, p3, p4, p5
+			if sChannel == networkId then
+				return sReplyChannel, sMessage
+			end
+		end
+	end
+end
+
+function waitForPacketTimeout(modem, networkId, timeout)
+	local timeoutTimer = os.startTimer( timeout )
+
+	while true do
+		local e, p1, p2, p3, p4, p5 = os.pullEvent()
+		if e == "modem_message" then
+			-- We received a message from a modem
+			local sSide, sChannel, sReplyChannel, sMessage, nDistance = p1, p2, p3, p4, p5
+			if sChannel == networkId then
+				return sReplyChannel, sMessage
+			end
+		elseif e == "timer" then
+			-- We received a timeout
+			local timer = p1
+			if timer == timeoutTimer then
+				return nil
+			end
+		end
+	end
+end
