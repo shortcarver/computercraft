@@ -5,7 +5,7 @@ function move(s,c,d)
 	turtle.suckDown()
 end
 
-function buildall()
+function buildall(count)
 	turtle.select(16)
 	while turtle.craft() do
 		turtle.drop()
@@ -13,25 +13,54 @@ function buildall()
 end
 
 function chest(count)
-	deliverybot.orderItem("planks", count * 8)
 
-	turtle.turnRight()
-	turtle.turnRight()
+	while count > 0 do
+		deliverybot.orderItem("planks", 64)
 
+		local number = 8
 
+		if count < 8 then
+			number = count
+		end
 
-	move(1,count,2)
-	move(1,count,3)
-	move(1,count,5)
-	move(1,count,7)
-	move(1,count,9)
-	move(1,count,10)
-	move(1,count,11)
-	buildall()
+		count = count - number
+
+		move(16,number,2)
+		move(16,number,3)
+		move(16,number,5)
+		move(16,number,7)
+		move(16,number,9)
+		move(16,number,10)
+		move(16,number,11)
+
+		turtle.select(16)
+		turtle.craft(number)
+
+		for i=1,16,1 do
+			if turtle.getItemCount(i) > 0 then
+				turtle.select(i)
+				turtle.drop()
+			end
+		end
+	end
 end
 
 function planks(count)
-	deliverybot.orderItem("wood", math.ceil(count / 4))
 
-	buildall()
+	while count > 0 do
+
+		local wood = count/4
+	
+		if wood > 64 then
+			wood = 64
+		end
+
+		turtle.select(1)
+		deliverybot.orderItem("wood", wood)
+
+		buildall()
+
+		count = count - wood * 4
+	end
+	
 end
