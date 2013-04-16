@@ -1,9 +1,13 @@
 while true do
-	turtle.suckUp()
-	turtle.select(1)
-	local count = turtle.getItemCount(1)
-	if count > 1 then
-		turtle.drop(count - 1)
+	while turtle.suckUp() do
+		os.sleep(0.5)
+	end
+
+	for i=1,16,1 do
+		if turtle.getItemCount(i) > 0 then
+			turtle.select(i)
+			turtle.drop()
+		end
 	end
 
 	os.sleep(30)

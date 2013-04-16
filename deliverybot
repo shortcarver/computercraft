@@ -14,6 +14,7 @@ end
 
 local itemName = tArgs[1]
 local messageQueue = {}
+local myModem = nil
 
 print("Sharing ", itemName)
 
@@ -144,21 +145,20 @@ function networkServer()
 		os.sleep(0.5)
 	end
 
-	local modem = nil
 	local modem_side = nil
 
-	modem, modem_side = modemhelp.configureModem(DELIVERY_NETWORK)
+	myModem, modem_side = modemhelp.configureModem(DELIVERY_NETWORK)
 
 	print("Listening for requests")
 
 	while true do
-		local replyId, message = modemhelp.waitForPacket(modem, DELIVERY_NETWORK)
+		local replyId, message = modemhelp.waitForPacket(myModem, DELIVERY_NETWORK)
 
 		local packet = textutils.unserialize(message)
 		
 		-- this can be done instantly, so do it
-		if packet[1] == "list" then
-			listRequest(modem, replyId, packet[2])
+		if packet[1] == "list" and packet[2] == itemName then
+			listRequest(myModem, replyId, packet[2])
 
 		-- others need to be handled in the other thread
 		elseif packet[2] == os.getComputerID() then
@@ -167,7 +167,7 @@ function networkServer()
 	end
 end
 
-function handleQueue
+function handleQueue()
 	while true do
 		if #messageQueue > 0 then
 			local pair = table.remove(messageQueue, 0)
@@ -175,7 +175,7 @@ function handleQueue
 			local replyId = pair[1]
 			local packet = pair[2]
 
-			deliveryRequest(modem, replyId, packet[3], packet[4], packet[5], packet[6])
+			deliveryRequest(myModem, replyId, packet[3], packet[4], packet[5], packet[6])
 		end
 
 		os.sleep(1)
@@ -183,4 +183,4 @@ function handleQueue
 end
 
 
-startServer()
+parallel.waitForAll(networkServer, handleQueue)

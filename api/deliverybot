@@ -49,7 +49,7 @@ function get(targetId, targetCount)
 
 	response = textutils.unserialize(message)
 
-	if response[1] == "complete" and reponse[2] == targetId then
+	if response[1] == "complete" and response[2] == targetId then
 		return true
 	end
 
