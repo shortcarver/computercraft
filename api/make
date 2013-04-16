@@ -15,7 +15,16 @@ end
 function chest(count)
 
 	while count > 0 do
-		deliverybot.orderItem("planks", 64)
+		local planks = count * 8
+
+		if planks > 64 then
+			planks = 64
+		end
+
+
+		while not deliverybot.orderItem("planks", planks) do
+			os.sleep(10)
+		end
 
 		local number = 8
 
@@ -56,7 +65,10 @@ function planks(count)
 		end
 
 		turtle.select(1)
-		deliverybot.orderItem("wood", wood)
+
+		while not deliverybot.orderItem("wood", wood) do
+			os.sleep(10)
+		end
 
 		buildall()
 
@@ -64,3 +76,4 @@ function planks(count)
 	end
 	
 end
+
