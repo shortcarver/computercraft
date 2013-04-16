@@ -12,8 +12,14 @@ function buildall()
 	end
 end
 
-function box(count)
+function chest(count)
 	deliverybot.orderItem("planks", count * 8)
+
+	turtle.turnRight()
+	turtle.turnRight()
+
+
+
 	move(1,count,2)
 	move(1,count,3)
 	move(1,count,5)
@@ -25,7 +31,7 @@ function box(count)
 end
 
 function planks(count)
-	deliverybot.orderItem("wood", math.ceil(count / 2))
+	deliverybot.orderItem("wood", math.ceil(count / 4))
 
 	buildall()
 end

@@ -7,4 +7,9 @@ function run(level)
 	if turtle.getItemCount(1) <= 10 then
 		deliverybot.orderItem("charcoal", 64 - turtle.getItemCount(1))
 	end
+
+	while turtle.getFuelLevel() < level and turtle.getItemCount(1) > 0 do
+		turtle.select(1)
+		turtle.refuel(1)
+	end
 end

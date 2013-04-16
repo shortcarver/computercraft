@@ -1,9 +1,0 @@
-local q = {}
-local filter
-
-function create(filter)
-	logger = {q={}, filter=filter}
-end
-
-function listener
-end
