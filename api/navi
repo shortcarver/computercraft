@@ -2,14 +2,22 @@ local heading = -1
 
 -- calculate the heading
 
-function forwardTest()
+function locate()
 	local x,y,z = gps.locate(5)
+	while x == nil do
+		x,y,z = gps.locate(5)
+	end
+	return x,y,z
+end
+
+function forwardTest()
+	local x,y,z = locate()
 
 	if turtle.forward() == false then
 		return -1
 	end
 
-	local x1,y1,z1 = gps.locate(5)
+	local x1,y1,z1 = locate()
 
 	print(x1)
 	print(y1)
@@ -134,7 +142,7 @@ function moveToX(x)
 		findHeading()
 	end
 
-	local xc, yc, zc = gps.locate(5)
+	local xc, yc, zc = locate()
 
 	if xc > x then
 		setHeading(1)
@@ -148,7 +156,7 @@ function moveToX(x)
 			elseif left2() then
 			end
 		end
-		xc, yc, zc = gps.locate(5)
+		xc, yc, zc = locate()
 	end
 end
 
@@ -157,7 +165,7 @@ function moveToZ(z)
 		findHeading()
 	end
 
-	local xc, yc, zc = gps.locate(5)
+	local xc, yc, zc = locate()
 
 	if zc > z then
 		setHeading(2)
@@ -171,12 +179,12 @@ function moveToZ(z)
 			elseif left2() then
 			end
 		end
-		xc, yc, zc = gps.locate(5)
+		xc, yc, zc = locate()
 	end
 end
 
 function moveToY(y)
-	local xc, yc, zc = gps.locate(5)
+	local xc, yc, zc = locate()
 
 	while y > yc do
 		if not up() then
@@ -188,7 +196,7 @@ function moveToY(y)
 				back()
 			end
 		end
-		xc, yc, zc = gps.locate(5)
+		xc, yc, zc = locate()
 	end
 
 	while y < yc do
@@ -201,7 +209,7 @@ function moveToY(y)
 				back()
 			end
 		end
-		xc, yc, zc = gps.locate(5)
+		xc, yc, zc = locate()
 	end
 end
 
@@ -209,7 +217,7 @@ end
 function dumbGoto(x,y,z)
 	moveToY(85)
 
-	local xc, yc, zc = gps.locate(5)
+	local xc, yc, zc = locate()
 	while x ~= xc or y ~= yc or z ~= zc do
 
 		if math.abs(xc-x) < math.abs(zc-z) then
@@ -222,7 +230,7 @@ function dumbGoto(x,y,z)
 
 		moveToY(y)
 
-		xc, yc, zc = gps.locate(5)
+		xc, yc, zc = locate()
 	end
 end
 
@@ -236,7 +244,7 @@ function smartGoto(x,y,z)
 
 	local found = false
 	while not found do
-		local sx,sy,sz = gps.locate(5)
+		local sx,sy,sz = locate()
 
 		if sx == x and sy == y and sz == z then
 			return
@@ -247,7 +255,7 @@ function smartGoto(x,y,z)
 		local ygood = true
 	
 		while xgood do
-			sx,sy,sz = gps.locate(5)
+			sx,sy,sz = locate()
 			-- nudge in x direction
 			if sx < x then
 				setHeading(3)
@@ -279,7 +287,7 @@ function smartGoto(x,y,z)
 		end
 		
 		while zgood do
-			sx,sy,sz = gps.locate(5)
+			sx,sy,sz = locate()
 			if sz < z then
 				setHeading(0)
 				zgood = forward()

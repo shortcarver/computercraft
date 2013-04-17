@@ -21,7 +21,7 @@ local modem_side = nil
 modem, modem_side = modemhelp.configureModem(REQUEST_CHANNEL)
 
 function getGPS()
-	local posX, posY, posZ = gps.locate(5)
+	local posX, posY, posZ = navi.locate()
 	posY = posY + 1
 	return posX,posY,posZ
 end

@@ -26,7 +26,7 @@ end
 
 function get(targetId, targetCount)
 
-	local x,y,z = gps.locate(5)
+	local x,y,z = navi.locate()
 
 	local modem = nil
 	local modem_side = nil

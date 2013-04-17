@@ -37,7 +37,7 @@ function listRequest(modem, clientId, nameRequest)
 	else
 		print("Sending to ", clientId)
 
-		local posX, posY, posZ = gps.locate(5)
+		local posX, posY, posZ = navi.locate()
 		print("Location: (",posX,",",posY,",",posZ,")")
 
 		modem.transmit( clientId, DELIVERY_NETWORK, 
@@ -105,7 +105,7 @@ function deliveryRequest(modem, clientId, requestCount, x, y, z)
 
 	-- store home position
 	local oh = navi.findHeading()
-	local xo,yo,zo = gps.locate(5)
+	local xo,yo,zo = navi.locate()
 
 	while true do
 		doDelivery(modem, clientId, requestCount, x, y, z)

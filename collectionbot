@@ -20,7 +20,7 @@ while true do
 	else
 		-- save current location
 		local oh = navi.findHeading()
-		local xo,yo,zo = gps.locate(5)
+		local xo,yo,zo = navi.locate()
 
 		-- go to drop off point
 		-- 93,72,173

@@ -1,0 +1,100 @@
+
+
+function checkSupplies()
+	refuel.run(1000)
+
+	if turtle.getItemCount(2) < 5 then
+		deliverybot.orderItem("chest", 64 - turtle.getItemCount(2))
+	end
+end
+
+function isFull()
+	return turtle.getItemCount(16) > 0
+end
+
+function forward()
+	while not turtle.forward() do
+		os.sleep(1)
+	end
+end
+
+function dropChest()
+	if not isFull() then
+		return
+	end
+	
+	turtle.select(2)
+	turtle.placeUp()
+	for i=3,16,1 do
+		if turtle.getItemCount(i) > 0 then
+			turtle.select(i)
+			turtle.dropUp()
+		end
+	end
+
+	-- todo broadcast chest location
+
+	turtle.select(3)
+end
+
+
+turtle.select(3)
+while true do
+	checkSupplies()
+	for y=1,5,1 do
+		for x=1,9,1 do
+			if turtle.detect() then
+				turtle.dig()
+				dropChest()
+			end
+			forward()
+		end
+
+		turtle.turnRight()
+
+		if turtle.detect() then
+			turtle.dig()
+			dropChest()
+		end
+		forward()
+
+
+		turtle.turnRight()
+
+		for x=1,9,1 do
+			if turtle.detect() then
+				turtle.dig()
+				dropChest()
+			end
+			forward()
+		end
+
+		turtle.turnLeft()
+
+		if turtle.detect() then
+			turtle.dig()
+			dropChest()
+		end
+		forward()
+
+		turtle.turnLeft()
+	end
+
+	if turtle.detectDown() then
+		turtle.digDown()
+	end
+
+	turtle.digDown()
+	turtle.down()
+	dropChest()
+
+	turtle.turnLeft()
+
+	if turtle.detect() then
+		turtle.dig()
+	end
+	forward()
+end
+	
+	
+

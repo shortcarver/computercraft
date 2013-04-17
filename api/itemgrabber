@@ -2,7 +2,7 @@ function get(itemName, slot)
 	-- store old position
 	print("Store position")
 	local oh = navi.findHeading()
-	local xo,yo,zo = gps.locate(5)
+	local xo,yo,zo = navi.locate()
 
 	print(oh,",",xo,",",yo,",",zo)
 
