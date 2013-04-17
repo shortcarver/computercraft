@@ -1,0 +1,98 @@
+function create(max)
+	local q = {}
+
+	q.heap = {}
+	q.count = 0
+
+	if max == nil then
+		q.max = true
+	else
+		q.max = max
+	end
+
+	return q
+end
+
+function pop(q)
+	local val = q.heap[0].v
+
+	q.heap[0] = q.heap[q.count-1]
+
+	table.remove(q.heap, q.count-1)
+
+	q.count = q.count - 1
+
+	if q.max then
+		_maxHeapify(q, 0)
+	else
+		_minHeapify(q, 0)
+	end
+
+	return val
+end
+
+function put(q, value, key)
+
+	q.heap[q.count] = {v=value,k=key}
+	q.count = q.count + 1
+
+	_cleanheap(q, q.count - 1)
+end
+
+function _cleanheap(q, index)
+	local parent = math.floor((index - 1) / 2)
+
+	while parent >= 0 do
+		if q.max then
+			_maxHeapify(q, parent)
+		else
+			_minHeapify(q, parent)
+		end
+
+		parent = math.floor((parent - 1) / 2)
+	end
+end
+
+function _maxHeapify(q, index)
+	local left = (index * 2) + 1
+	local right = (index * 2) + 2
+	local big = index
+
+	if left < q.count and q.heap[left].k > q.heap[big].k then
+		big = left
+	end
+
+	if right < q.count and q.heap[right].k > q.heap[big].k then
+		big = right
+	end
+
+	if big ~= index then
+		local swap = q.heap[index]
+		q.heap[index] = q.heap[big]
+		q.heap[big] = swap
+
+		_maxHeapify(q, big)
+	end
+end
+
+function _minHeapify(q, index)
+	local left = (index * 2) + 1
+	local right = (index * 2) + 2
+	local small = index
+
+	if left < q.count and q.heap[left].k < q.heap[small].k then
+		small = left
+	end
+
+	if right < q.count and q.heap[right].k < q.heap[small].k then
+		small = right
+	end
+
+	if small ~= index then
+		local swap = q.heap[index]
+		q.heap[index] = q.heap[small]
+		q.heap[small] = swap
+
+		_maxHeapify(q, small)
+	end
+end

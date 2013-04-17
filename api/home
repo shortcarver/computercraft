@@ -1,0 +1,26 @@
+function set()
+	local x,y,z = navi.locate()
+
+	local h = navi.findHeading()
+
+	local f,err = fs.open("/home.loc", "w")
+
+	f.write(textutils.serialize({x,y,z,h}))
+	f.flush()
+	f.close()
+end
+
+function get()
+	if not fs.exists("/home.loc") then
+		return nil
+	end
+
+	local f, err = fs.open("/home.loc", "r")
+
+	local data = f.readLine()
+
+	f.close()
+
+	local result = textutils.unserialize(data)
+	return result[1], result[2], result[3], result[4]
+end

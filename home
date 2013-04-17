@@ -1,0 +1,32 @@
+-- startup stuff
+local function printUsage()
+	print( "Usages:" )
+	print( "home get" )
+	print( "home set" )
+	print( "home auto" )
+end
+
+local args = { ... }
+if #args < 1 then
+	printUsage()
+	return
+end
+
+if args[1] == "set" then
+	refuel.run(10)
+	home.set()
+	local x,y,z,h = home.get()
+	print("Home: (",x,",",y,",",z,",",h,")")
+
+elseif args[1] == "get" then
+	local x,y,z,h = home.get()
+	print("Home: (",x,",",y,",",z,",",h,")")
+
+elseif args[1] == "auto" then
+	if home.get() == nil then
+		refuel.run(10)
+		home.set()
+	end
+	local x,y,z,h = home.get()
+	print("Home: (",x,",",y,",",z,",",h,")")
+end

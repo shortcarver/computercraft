@@ -1,4 +1,6 @@
 
+	
+
 while true do
 	turtle.select(2)
 
@@ -12,7 +14,7 @@ while true do
 
 	-- find index
 	local flag = false
-	local location = 2
+	local location = 3
 	for i=3,16,1 do
 		if turtle.compareTo(i) then
 			flag = true
@@ -21,44 +23,69 @@ while true do
 		end
 	end
 
-	location = location - 1
-
-	local height = math.floor(location/2)
-	local column = location % 2
-
-	print("Height:",height, " column:",column)
-
-	for i=1,height,1 do
-		turtle.up()
-	end
-
-	turtle.turnLeft()
-	if column == 1 then
-		turtle.turnLeft()
-	end
-
-	if not turtle.drop() then
-		turtle.dropUp()
-	end
-
-	turtle.turnRight()
-	if column == 1 then
+	if not flag then
 		turtle.turnRight()
-	end
-
-	for i=1,height,1 do
-		turtle.down()
-	end
-
-	if turtle.getItemCount(2) > 0 then
-		turtle.select(2)
+		turtle.turnRight()
 		turtle.drop()
-	end
+		turtle.turnRight()
+		turtle.turnRight()
+	else
+		location = location - 3
 
-	for i=3,16,1 do
-		if turtle.getItemCount(i) > 1 then
-			turtle.select(i)
-			turtle.drop(turtle.getItemCount(i)-1)
+		local height = math.floor(location/2)
+		local column = location % 2
+
+		print("Height:",height, " column:",column)
+
+		for i=1,height,1 do
+			turtle.up()
+		end
+
+		if column == 0 then
+			turtle.turnRight()
+		else
+			turtle.turnLeft()
+		end
+
+		if not turtle.drop() then
+			if column == 0 then
+				turtle.turnLeft()
+			else
+				turtle.turnRight()
+			end
+
+			for i=1,height,1 do
+				turtle.down()
+			end
+			
+			turtle.turnRight()
+			turtle.turnRight()
+			turtle.drop()
+			turtle.turnRight()
+			turtle.turnRight()
+		else
+			if column == 0 then
+				turtle.turnLeft()
+			else
+				turtle.turnRight()
+			end
+
+			for i=1,height,1 do
+				turtle.down()
+			end
+		end
+
+		if turtle.getItemCount(2) > 0 then
+			turtle.select(2)
+			turtle.drop()
+		end
+
+
+		for i=3,16,1 do
+			if turtle.getItemCount(i) > 1 then
+				turtle.select(i)
+				turtle.drop(turtle.getItemCount(i)-1)
+			end
 		end
 	end
 end

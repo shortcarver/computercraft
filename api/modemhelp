@@ -21,7 +21,7 @@ function configureModem(networkId)
 		modem.open(networkId)
 	end
 
-	return modem, modem_side
+	return modem
 end
 
 

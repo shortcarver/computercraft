@@ -182,5 +182,17 @@ function handleQueue()
 	end
 end
 
+refuel.run(1000)
+
+local x,y,z,h = home.get()
+local x1,y1,z1 = navi.locate()
+if x ~= x1 or y ~= y1 or z ~= z1 then
+	navi.goto(x,y,z)
+end
+
+local h1 = navi.findHeading()
+if h1 ~= h then
+	navi.setHeading(h)
+end
 
 parallel.waitForAll(networkServer, handleQueue)
