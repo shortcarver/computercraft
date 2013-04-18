@@ -1,8 +1,10 @@
-os.loadAPI("/rom/mc/api/deliverybot")
-os.loadAPI("/rom/mc/api/finditem")
-os.loadAPI("/rom/mc/api/itemgrabber")
-os.loadAPI("/rom/mc/api/modemhelp")
-os.loadAPI("/rom/mc/api/navi")
-os.loadAPI("/rom/mc/api/refuel")
-os.loadAPI("/rom/mc/api/make")
-os.loadAPI("/rom/mc/api/home")
+local files = fs.list("/rom/mc/api")
+
+for n, f in ipairs(files) do
+	if string.sub(f,1,1) ~= "_" then
+		local p = "/rom/mc/api/"..f
+		if not fs.isDir(p) then
+			os.loadAPI(p)
+		end
+	end
+end

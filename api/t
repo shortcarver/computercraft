@@ -1,3 +1,5 @@
+-- turtle short cuts. mainly handles things like fuel, and special digging
+
 function fuel()
 	if turtle.getFuelLevel() <= 10 then
 		turtle.select(1)
@@ -7,21 +9,107 @@ end
 
 function up()
 	fuel()
-	turtle.up()
+	return turtle.up()
 end
+
+function upAttack()
+	while not up() and not turtle.detectUp() do
+		turtle.attackUp()
+	end
+end	
 
 function forward()
 	fuel()
-	turtle.forward()
+	return turtle.forward()
 end
 
 function back()
 	fuel()
-	turtle.back()
+	return turtle.back()
 end
 
 function down()
 	fuel()
-	turtle.down()
+	return turtle.down()
 end
 
+function downAttack()
+	while not down() and not turtle.detectDown() do
+		turtle.attackDown()
+	end
+end
+
+function digChest()
+	while turtle.suck() do
+		os.sleep(0.5)
+	end
+
+	return turtle.dig()
+end
+
+function digChestDown()
+	while turtle.suckDown() do
+		os.sleep(0.5)
+	end
+
+	return turtle.digDown()
+end
+
+function digChestUp()
+	while turtle.suckUp() do
+		os.sleep(0.5)
+	end
+
+	return turtle.digUp()
+end
+
+function isInventoryFull()
+	for i=1,16 do
+		if turtle.getItemCount() == 0 then
+			return false
+		end
+	end
+
+	return true
+end
+
+function digAllUp()
+	while turtle.detectUp() do
+		turtle.digUp()
+		os.sleep(0.5)
+	end
+end
+
+function digAll()
+	while turtle.detect() do
+		turtle.dig()
+		os.sleep(0.5)
+	end
+end
+
+
+--replaces the item in the world with the item in slot i
+function replace(i)
+	turtle.select(i)
+	if not turtle.compare() or not turtle.detect() then
+		turtle.dig()
+		turtle.place()
+	end
+end	
+	
+function replaceUp(i)
+	turtle.select(i)
+	if not turtle.compareUp() or not turtle.detectUp() then
+		turtle.digUp()
+		turtle.placeUp()
+	end
+end	
+	
+function replaceDown(i)
+	turtle.select(i)
+	if not turtle.compareDown() or not turtle.detectDown() then
+		turtle.digDown()
+		turtle.placeDown()
+	end
+end	
+	

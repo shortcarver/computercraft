@@ -1,11 +1,24 @@
 
-turtle.placeUp()
-while turtle.forward() do
-  turtle.select(2)
-  turtle.placeUp()
+function placeUpRow()
+	turtle.replaceUp(2)
+	while t.forward() do
+		t.replaceUp(2)
+	end
 end
 
+placeUpRow()
 
+turtle.turnRight()
+if not t.forward() then
+	return
+end
+turtle.turnRight()
 
+placeUpRow()
 
+turtle.turnLeft()
+if not t.forward() then
+	return
+end
+turtle.turnLeft()
 

@@ -1,7 +1,13 @@
-function fuel()
-	if turtle.getFuelLevel() then
-		turtle.select(1)
-		turtle.refuel(1)
-	end
+
+turtle.select(2)
+turtle.dig()
+t.forward()
+
+while turtle.compareUp() do
+	turtle.digUp()
+	t.up()
+end
+
+while t.down() do
 end
 

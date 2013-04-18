@@ -1,0 +1,46 @@
+local _lt = {4,0,1,3,2,3,2,4,0,1,0,1,3,2,4,2,4,0,1,3,1,3,2,4,0}
+-- represents the matrix
+--[[
+[
+  [4,0,1,3,2],
+  [3,2,4,0,1],
+  [0,1,3,2,4],
+  [2,4,0,1,3],
+  [1,3,2,4,0]
+]
+]]--
+
+function getPattern(x,y)
+	return _lt[y * 5 + x + 1]
+end
+
+-- returns nil if no mine in this block
+-- retuens the x,y coordinate of the nearest mine
+function getNearestMine(x,y)
+	-- get mine location in 2x2 block
+	local xm = math.floor(x/2) % 4
+	local ym = math.floor(y/2) % 4
+	local pat = getPattern(xm,ym)
+
+	-- this block has no mine
+	if pat == 0 then
+		return nil
+	end
+
+	-- round x and y to the top left corner
+	-- of the 2x2 block
+	x = math.floor(x/2) * 2
+	y = math.floor(y/2) * 2
+
+	-- mine is in bottom half of block
+	if pat > 2 then
+		y = y + 1
+	end
+
+	-- mine is in right side of block
+	if pat % 2 == 0 then
+		x = x + 1
+	end
+
+	return x,y
+end
