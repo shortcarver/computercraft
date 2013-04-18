@@ -1,0 +1,21 @@
+-- startup stuff
+local args = { ... }
+
+local dir = nil
+
+if #args >= 1 then
+	dir = args[1]
+end
+
+if dir == nil then
+	turtle.dig()
+elseif dir == "up" then
+	turtle.digUp()
+elseif dir == "down" then
+	turtle.digDown()
+else
+	print( "Usage:" )
+	print( "dig" )
+	print( "dig up" )
+	print( "dig down" )
+end

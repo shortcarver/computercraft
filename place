@@ -1,0 +1,20 @@
+-- startup stuff
+local function printUsage()
+	print( "Usages:" )
+	print( "place [number] [slot]" )
+end
+
+local args = { ... }
+
+local num = 1
+
+if #args >= 1 then
+	num = tonumber(args[1])
+end
+
+if #args >= 2 then
+	turtle.select(tonumber(args[2]))
+end
+
+turtle.place(num)
+	
