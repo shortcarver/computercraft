@@ -1,0 +1,27 @@
+function fuel()
+	if turtle.getFuelLevel() <= 10 then
+		turtle.select(1)
+		turtle.refuel(1)
+	end
+end
+
+function up()
+	fuel()
+	turtle.up()
+end
+
+function forward()
+	fuel()
+	turtle.forward()
+end
+
+function back()
+	fuel()
+	turtle.back()
+end
+
+function down()
+	fuel()
+	turtle.down()
+end
+

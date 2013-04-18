@@ -21,9 +21,52 @@ function isValuable()
 	return true
 end
 
+function isChest()
+	turtle.select(5)
+	if turtle.compare() then
+		return true
+	end
+	return false
+end
+
+function eatChest()
+	while turtle.suck() do
+		os.sleep(1)
+	end
+
+	turtle.select(1)
+	turtle.dig()
+end
+
+function isChestDown()
+	turtle.select(5)
+	if turtle.compareDown() then
+		return true
+	end
+	return false
+end
+
+function suckChestDown()
+	turtle.select(1)
+	while turtle.suckDown() do
+		os.sleep(1)
+	end
+end
+
+function digDown()
+	if isChestDown() then
+		suckChestDown()
+	end
+	turtle.select(1)
+	turtle.digDown()
+end
+
 function checkWalls()
 	for i=1,4 do
-		if isValuable() then
+		if isChest() then
+			eatChest()
+		elseif isValuable() then
+			turtle.select(1)
 			turtle.dig()
 		end
 		turtle.turnRight()
@@ -36,13 +79,21 @@ fuel()
 
 local depth = 0
 
-turtle.digDown()
-while turtle.down() do
+digDown()
+turtle.down()
+if turtle.detectDown() then
+	turtle.select(1)
+	digDown()
+end
+depth = depth + 1
+
+while not turtle.detectDown() do
 	fuel()
+	turtle.down()
 	checkWalls()
 	if turtle.detectDown() then
 		turtle.select(1)
-		turtle.digDown()
+		digDown()
 	end
 	depth = depth + 1
 end
@@ -50,7 +101,7 @@ end
 for i=1,depth do
 	-- this is to protect against cobble/obsidian
 	-- from lava/water reactions
-	if turtle.detectUp() then
+	while turtle.detectUp() do
 		turtle.select(1)
 		turtle.digUp()
 	end

@@ -12,12 +12,14 @@ turtle.dig()
 
 local height = 0
 
+turtle.select(2)
 while turtle.compareUp() do
   fuel()
   turtle.digUp()
   turtle.up()
   turtle.dig()
   height = height + 1
+  turtle.select(2)
 end
 
 turtle.turnLeft()
