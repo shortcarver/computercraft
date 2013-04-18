@@ -1,0 +1,37 @@
+function fuel()
+  if turtle.getFuelLevel() <= 10 then
+    turtle.select(1)
+    turtle.refuel(1)
+  end
+end
+
+turtle.dig()
+fuel()
+turtle.forward()
+turtle.dig()
+
+local height = 0
+
+while turtle.compareUp() do
+  fuel()
+  turtle.digUp()
+  turtle.up()
+  turtle.dig()
+  height = height + 1
+end
+
+turtle.turnLeft()
+turtle.dig()
+turtle.forward()
+turtle.turnRight()
+turtle.dig()
+fuel()
+
+while height >= 0 do
+  fuel()
+  turtle.digDown()
+  turtle.down()
+  turtle.dig()
+  height = height - 1
+end
+

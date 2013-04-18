@@ -1,0 +1,62 @@
+function fuel()
+	if turtle.getFuelLevel() <= 10 then
+		turtle.select(1)
+		turtle.refuel(1)
+	end
+end
+
+-- pos 1 = fuel
+-- pos 2 = plug
+-- pos 3,4,5 = junk
+-- pos 6 + = goodies
+function isValuable()
+	-- check junk
+	for i=3,4 do
+		turtle.select(i)
+		if not turtle.detect() or turtle.compare() then
+			return false
+		end
+	end
+
+	return true
+end
+
+function checkWalls()
+	for i=1,4 do
+		if isValuable() then
+			turtle.dig()
+		end
+		turtle.turnRight()
+	end
+end
+
+-- start program --
+
+fuel()
+
+local depth = 0
+
+turtle.digDown()
+while turtle.down() do
+	fuel()
+	checkWalls()
+	if turtle.detectDown() then
+		turtle.select(1)
+		turtle.digDown()
+	end
+	depth = depth + 1
+end
+
+for i=1,depth do
+	-- this is to protect against cobble/obsidian
+	-- from lava/water reactions
+	if turtle.detectUp() then
+		turtle.select(1)
+		turtle.digUp()
+	end
+	turtle.up()
+	fuel()
+end
+
+turtle.select(2)
+turtle.placeDown()

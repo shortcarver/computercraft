@@ -1,0 +1,11 @@
+
+turtle.placeUp()
+while turtle.forward() do
+  turtle.select(2)
+  turtle.placeUp()
+end
+
+
+
+
+
