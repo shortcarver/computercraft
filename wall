@@ -25,11 +25,11 @@ end
 function buildUp(count)
 	for i=1,count do
 		t.up()
-		turtle.placeDown()
-		if not findMats then
+		if not findMats() then
 			print("Out of building materials!")
 			return false
 		end
+		turtle.placeDown()
 	end
 
 	return true
@@ -55,15 +55,17 @@ for i=1,length do
 	if not buildUp(height) then
 		return
 	end
-	if length%5==0 then
+	if i%5 == 0 then
 		t.up()
 		turtle.select(2)
 		turtle.placeDown()
+		t.forward()
 		t.down()
+	else
+		t.forward()
 	end
-	t.forward()
 	height = goDown()
 	findMats()
-	turtle.placeDown() -- this gets grass
+	turtle.placeDown()
 end
 

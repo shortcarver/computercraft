@@ -1,10 +1,12 @@
--- pos 1 = fuel
--- pos 2 = plug
--- pos 3,4,5 = junk
--- pos 6 + = goodies
+local FUEL = 1
+local PLUG = 2
+local CHEST = 3
+local JUNKSTART = 4
+local JUNKEND = 6
+
 function isValuable()
 	-- check junk
-	for i=3,4 do
+	for i=JUNKSTART,JUNKEND do
 		turtle.select(i)
 		if not turtle.detect() or turtle.compare() then
 			return false
@@ -15,7 +17,7 @@ function isValuable()
 end
 
 function isChest()
-	turtle.select(5)
+	turtle.select(CHEST)
 	if turtle.compare() then
 		return true
 	end
@@ -23,7 +25,7 @@ function isChest()
 end
 
 function isChestDown()
-	turtle.select(5)
+	turtle.select(CHEST)
 	if turtle.compareDown() then
 		return true
 	end
@@ -31,7 +33,7 @@ function isChestDown()
 end
 
 function isChestUp()
-	turtle.select(5)
+	turtle.select(CHEST)
 	if turtle.compareUp() then
 		return true
 	end
@@ -72,10 +74,12 @@ function checkWalls()
 end
 
 function drillDown(dp)
-	-- dig tunnel
+	if turtle.detectDown() then
+		digDown()
+	end
 	while not turtle.detectDown() do
-		t.downAttack()
 		checkWalls()
+		t.downAttack()
 		if turtle.detectDown() then
 			digDown()
 		end
@@ -94,6 +98,8 @@ function drillUp(dp)
 		t.upAttack()
 		dp = dp - 1
 	end
+
+	return dp
 end
 
 
@@ -110,10 +116,10 @@ for i=1,2 do
 	depth = depth + 1
 end
 
-turtle.select(2)
+turtle.select(PLUG)
 turtle.placeUp()
 
--- drill to bedrock -- hole 1
+-- drill to bedrock hole 1
 depth = drillDown(depth)
 
 -- go up 10
@@ -124,10 +130,10 @@ for i=1,10 do
 end
 
 -- go to next position
-t.forwardAttack()
-t.forwardAttack()
+t.forwardDigAttack()
+t.forwardDigAttack()
 turtle.turnLeft()
-t.forwardAttack()
+t.forwardDigAttack()
 turtle.turnRight()
 
 -- drill down
@@ -138,12 +144,12 @@ depth = drillUp(depth)
 
 -- place cap
 t.up()
-turtle.select(2)
+turtle.select(PLUG)
 turtle.placeDown()
 
 -- go to next place
-t.forwardAttack()
-t.forwardAttack()
+t.forwardDigAttack()
+t.forwardDigAttack()
 turtle.turnLeft()
-t.forwardAttack()
+t.forwardDigAttack()
 turtle.turnRight()
