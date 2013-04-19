@@ -16,11 +16,56 @@ function upAttack()
 	while not up() and not turtle.detectUp() do
 		turtle.attackUp()
 	end
-end	
+end
+
+function upDigAttack()
+	while not up() do
+		-- if block, then dig
+		if turtle.detectUp() then
+			turtle.digUp()
+			os.sleep(0.5)
+		else
+			-- this is a mob, attack until nothing to attack
+			while turtle.attackUp() do end
+		end
+	end
+
+	return true;
+end
 
 function forward()
 	fuel()
 	return turtle.forward()
+end
+
+function forwardAttack()
+	while not forward() and not turtle.detect() do
+		turtle.attack()
+	end
+end
+
+function forwardDig()
+	while turtle.detect() do
+		turtle.dig()
+		os.sleep(0.5)
+	end
+
+	return forward()
+end
+
+function forwardDigAttack()
+	while not forward() do
+		-- if block, then dig
+		if turtle.detect() then
+			turtle.dig()
+			os.sleep(0.5)
+		else
+			-- this is a mob, attack until nothing to attack
+			while turtle.attack() do end
+		end
+	end
+
+	return true;
 end
 
 function back()

@@ -71,10 +71,37 @@ function checkWalls()
 	end
 end
 
+function drillDown(dp)
+	-- dig tunnel
+	while not turtle.detectDown() do
+		t.downAttack()
+		checkWalls()
+		if turtle.detectDown() then
+			digDown()
+		end
+		dp = dp + 1
+	end
+	return dp
+end
+
+function drillUp(dp)
+	while dp > 1 do
+		checkWalls()
+		while turtle.detectUp() do
+			digUp()
+			os.sleep(0.5)
+		end
+		t.upAttack()
+		dp = dp - 1
+	end
+end
+
+
 -- start program --
 
 local depth = 0
 
+-- go down, place cap
 digDown()
 for i=1,2 do
 	t.downAttack()
@@ -85,65 +112,38 @@ end
 
 turtle.select(2)
 turtle.placeUp()
--- dig tunnel
-while not turtle.detectDown() do
-	t.downAttack()
-	checkWalls()
-	if turtle.detectDown() then
-		digDown()
-	end
-	depth = depth + 1
-end
+
+-- drill to bedrock -- hole 1
+depth = drillDown(depth)
 
 -- go up 10
-
 turtle.select(1)
 for i=1,10 do
-	-- this is to protect against cobble/obsidian
-	-- from lava/water reactions
-	while turtle.detectUp() do
-		turtle.digUp()
-	end
-	t.upAttack()
+	t.upDigAttack()
 	depth = depth - 1
 end
 
 -- go to next position
-for i=1,2 do
-	while not t.forward() do
-		turtle.dig()
-		turtle.attack()
-	end
-end
-
+t.forwardAttack()
+t.forwardAttack()
 turtle.turnLeft()
-while not t.forward() do
-	turtle.dig()
-	turtle.attack()
-end
+t.forwardAttack()
 turtle.turnRight()
 
--- dig down
-digDown()
-while not turtle.detectDown() do
-	t.down()
-	digDown()
-	depth = depth + 1
-end
+-- drill down
+depth = drillDown(depth)
 
--- dig up
-while depth > 1 do
-	checkWalls()
-	-- this is to protect against cobble/obsidian
-	-- from lava/water reactions, also handles gravel
-	while turtle.detectUp() do
-		digUp()
-		os.sleep(0.5)
-	end
-	t.upAttack()
-	depth = depth - 1
-end
+-- dig up -- hole 2
+depth = drillUp(depth)
 
+-- place cap
 t.up()
 turtle.select(2)
 turtle.placeDown()
+
+-- go to next place
+t.forwardAttack()
+t.forwardAttack()
+turtle.turnLeft()
+t.forwardAttack()
+turtle.turnRight()
