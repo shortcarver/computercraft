@@ -30,6 +30,14 @@ function isChestDown()
 	return false
 end
 
+function isChestUp()
+	turtle.select(5)
+	if turtle.compareUp() then
+		return true
+	end
+	return false
+end
+
 function digDown()
 	if isChestDown() then
 		turtle.select(1)
@@ -37,6 +45,16 @@ function digDown()
 	else
 		turtle.select(1)
 		turtle.digDown()
+	end
+end
+
+function digUp()
+	if isChestUp() then
+		turtle.select(1)
+		t.digChestUp()
+	else
+		turtle.select(1)
+		turtle.digUp()
 	end
 end
 
@@ -58,11 +76,16 @@ end
 local depth = 0
 
 digDown()
-t.downAttack()
-turtle.select(1)
-digDown()
-depth = depth + 1
+for i=1,2 do
+	t.downAttack()
+	turtle.select(1)
+	digDown()
+	depth = depth + 1
+end
 
+turtle.select(2)
+turtle.placeUp()
+-- dig tunnel
 while not turtle.detectDown() do
 	t.downAttack()
 	checkWalls()
@@ -72,15 +95,55 @@ while not turtle.detectDown() do
 	depth = depth + 1
 end
 
+-- go up 10
+
 turtle.select(1)
-for i=1,depth do
+for i=1,10 do
 	-- this is to protect against cobble/obsidian
 	-- from lava/water reactions
 	while turtle.detectUp() do
 		turtle.digUp()
 	end
 	t.upAttack()
+	depth = depth - 1
 end
+
+-- go to next position
+for i=1,2 do
+	while not t.forward() do
+		turtle.dig()
+		turtle.attack()
+	end
+end
+
+turtle.turnLeft()
+while not t.forward() do
+	turtle.dig()
+	turtle.attack()
+end
+turtle.turnRight()
+
+-- dig down
+digDown()
+while not turtle.detectDown() do
+	t.down()
+	digDown()
+	depth = depth + 1
+end
+
+-- dig up
+while depth > 0 do
+	checkWalls()
+	-- this is to protect against cobble/obsidian
+	-- from lava/water reactions
+	while turtle.detectUp() do
+		digUp()
+		os.sleep(0.5)
+	end
+	t.upAttack()
+	depth = depth - 1
+end
+
 
 turtle.select(2)
 turtle.placeDown()
