@@ -132,10 +132,10 @@ while not turtle.detectDown() do
 end
 
 -- dig up
-while depth > 0 do
+while depth > 1 do
 	checkWalls()
 	-- this is to protect against cobble/obsidian
-	-- from lava/water reactions
+	-- from lava/water reactions, also handles gravel
 	while turtle.detectUp() do
 		digUp()
 		os.sleep(0.5)
@@ -144,6 +144,6 @@ while depth > 0 do
 	depth = depth - 1
 end
 
-
+t.up()
 turtle.select(2)
 turtle.placeDown()
