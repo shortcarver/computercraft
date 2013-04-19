@@ -1,6 +1,6 @@
 -- scans inventory for building materials
 function findMats()
-	for i=2,16 do
+	for i=3,16 do
 		if turtle.getItemCount(i) > 0 then
 			turtle.select(i)
 			return true
@@ -55,7 +55,15 @@ for i=1,length do
 	if not buildUp(height) then
 		return
 	end
+	if length%5==0 then
+		t.up()
+		turtle.select(2)
+		turtle.placeDown()
+		t.down()
+	end
 	t.forward()
 	height = goDown()
+	findMats()
+	turtle.placeDown() -- this gets grass
 end
 
