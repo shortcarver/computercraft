@@ -1,0 +1,45 @@
+function selectStairs()
+	for i=2,3 do
+		if turtle.getItemCount(i) > 0 then
+			turtle.select(i)
+			return true
+		end
+	end
+	return false
+end
+
+function selectFiller()
+	for i=4,16 do
+		if turtle.getItemCount(i) > 0 then
+			turtle.select(i)
+			return true
+		end
+	end
+	return false
+end
+
+local args = { ... }
+
+if #args < 1 then
+	print("slot 1 = fuel")
+	print("slot 2,3 = stairs")
+	print("slot 4+ = filler")
+	print("Usage: ")
+	print("tower height")
+	return
+end
+
+local height = tonumber(args[1])
+
+for i=1,height do
+	t.forward()
+	selectFiller()
+	turtle.place()
+	t.back()
+	selectStairs()
+	turtle.place()
+	t.up()
+	t.forward()
+	t.forward()
+	turtle.turnLeft()
+end
