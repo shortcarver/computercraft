@@ -1,0 +1,19 @@
+local args = { ... }
+
+if #args < 1 then
+	print( "stairs height" )
+	return
+end
+
+local height = tonumber(args[1])
+
+for i=1,height do
+	t.up()
+	turtle.select(2)
+	turtle.placeDown()
+	t.forward()
+end
+
+while not turtle.detectDown() do
+	t.down()
+end
