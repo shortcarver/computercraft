@@ -13,6 +13,10 @@ function create(max)
 	return q
 end
 
+function size(q)
+	return q.count
+end
+
 function pop(q)
 	local val = q.heap[0].v
 

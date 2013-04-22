@@ -1,0 +1,31 @@
+function findMats()
+	for i=2,16 do
+		if turtle.getItemCount(i) > 0 then
+			turtle.select(i)
+			return true
+		end
+	end
+	return false
+end
+
+function fillWalls()
+	for i=1,4 do
+		findMats()
+		turtle.place()
+		turtle.turnRight()
+	end
+end
+
+local depth = 0
+
+while not turtle.detectDown() do
+	t.downAttack()
+	depth = depth + 1
+end
+
+for i=1,depth do
+	fillWalls()
+	t.upAttack()
+	findMats()
+	turtle.placeDown()
+end
