@@ -10,6 +10,8 @@ end
 
 function fillWalls()
 	for i=1,4 do
+		while turtle.attack() do
+		end
 		findMats()
 		turtle.place()
 		turtle.turnRight()
