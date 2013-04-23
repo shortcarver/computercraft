@@ -69,7 +69,7 @@ function checkWalls()
 			turtle.select(1)
 			turtle.dig()
 		end
-		turtle.turnRight()
+		t.turnRight()
 	end
 end
 
@@ -132,9 +132,9 @@ end
 -- go to next position
 t.forwardDigAttack()
 t.forwardDigAttack()
-turtle.turnLeft()
+t.turnLeft()
 t.forwardDigAttack()
-turtle.turnRight()
+t.turnRight()
 
 -- drill down
 depth = drillDown(depth)
@@ -150,6 +150,6 @@ turtle.placeDown()
 -- go to next place
 t.forwardDigAttack()
 t.forwardDigAttack()
-turtle.turnLeft()
+t.turnLeft()
 t.forwardDigAttack()
-turtle.turnRight()
+t.turnRight()

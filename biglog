@@ -14,16 +14,16 @@ while turtle.compareUp() do
 	turtle.select(2)
 end
 
-turtle.turnLeft()
+t.turnLeft()
 turtle.dig()
 t.forward()
-turtle.turnRight()
+t.turnRight()
 turtle.dig()
 
 while height > 0 do
-  turtle.digDown()
-  t.down()
-  turtle.dig()
-  height = height - 1
+	turtle.digDown()
+	t.down()
+	turtle.dig()
+	height = height - 1
 end
 
