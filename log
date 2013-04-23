@@ -3,7 +3,7 @@ turtle.select(2)
 turtle.dig()
 t.forward()
 
-while turtle.compareUp() do
+while turtle.detectUp() do
 	turtle.digUp()
 	t.up()
 end

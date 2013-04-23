@@ -1,0 +1,80 @@
+
+local scannedLocations = {}
+local newLocations = pq.create(true)
+
+function hashLoc(x,y,z)
+	return (x + 500)..","..(z + 500)..","..(y + 500)
+end
+
+function pushLoc(x,y,z)
+	local lstr = hashLoc(x,y,z)
+	if scannedLocations[lstr] then
+		return
+	end
+
+	if pq.containsKey(newLocations, lstr) then
+		return
+	end
+
+	pq.put(newLocations, {x=x,y=y,z=z}, lstr)
+end
+
+function popLoc()
+	if pq.size(newLocations) > 0 then
+		local ret = pq.pop(newLocations)
+
+		return ret.x, ret.y, ret.z
+	end
+	return nil
+end
+
+function scan()
+	local h,x,y,z = t.getLoc()
+
+
+	if turtle.detectUp() then
+		turtle.digUp()
+		x,y,z = t.getLocUp()
+		pushLoc(x,y,z)
+	end
+
+	if turtle.detectDown() then
+		turtle.digDown()
+		x,y,z = t.getLocDn()
+		pushLoc(x,y,z)
+	end
+
+	for i=1,4 do
+		if turtle.detect() then
+			turtle.dig()
+			x,y,z = t.getLocFd()
+			pushLoc(x,y,z)
+		end
+		t.rt()
+	end
+
+	h,x,y,z = t.getLoc()
+	scannedLocations[hashLoc(x,y,z)] = true
+end
+
+
+t.setLoc(0,0,0,0)
+
+-- find the bottom of our target
+while t.up() do
+end
+
+scan()
+
+while pq.size(newLocations) > 0 do
+	local x,y,z = popLoc()
+
+	if x == nil then
+		break
+	end
+
+	t.goto(x,y,z)
+	scan()
+end
+
+t.goto(0,0,0)

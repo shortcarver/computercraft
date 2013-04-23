@@ -43,6 +43,25 @@ function put(q, value, key)
 	_cleanheap(q, q.count - 1)
 end
 
+function contains(q, value)
+	for i=0,q.count-1 do
+		if q.heap[i].v == value then
+			return true
+		end
+	end
+	return false
+end
+
+function containsKey(q, key)
+	-- this is brute force...
+	for i=0,q.count-1 do
+		if q.heap[i].k == key then
+			return true
+		end
+	end
+	return false
+end
+
 function _cleanheap(q, index)
 	local parent = math.floor((index - 1) / 2)
 

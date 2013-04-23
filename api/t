@@ -1,5 +1,10 @@
 -- turtle short cuts. mainly handles things like fuel, and special digging
 
+local th = 0
+local tx = 0
+local ty = 0
+local tz = 0
+
 function fuel()
 	if turtle.getFuelLevel() <= 10 then
 		turtle.select(1)
@@ -7,9 +12,68 @@ function fuel()
 	end
 end
 
+function setLoc(h,x,y,z)
+	th = h
+	tx = x
+	ty = y
+	tz = z
+end
+
+function getLoc()
+	return th,tx,ty,tz
+end
+
+function getLocUp()
+	return tx,ty+1,tz
+end
+
+function getLocDn()
+	return tx,ty-1,tz
+end
+
+function getLocFd()
+	if th%2 == 0 then
+		return tx, ty, tz + (th - 1)
+	else
+		return tx - (th - 2), ty, tz
+	end
+end
+
+function getLocBk()
+	if th%2 == 0 then
+		return tx, ty, tz - (th - 1)
+	else
+		return tx + (th - 2), ty, tz
+	end
+end
+
+function getLocRt()
+	local h = (th + 1) % 4
+
+	if h%2 == 0 then
+		return tx, ty, tz + (h - 1)
+	else
+		return tx - (h - 2), ty, tz
+	end
+end
+
+function getLocLt()
+	local h = ((th - 1) + 4) % 4
+
+	if h%2 == 0 then
+		return tx, ty, tz + (h - 1)
+	else
+		return tx - (h - 2), ty, tz
+	end
+end
+
 function up()
 	fuel()
-	return turtle.up()
+	local flag = turtle.up()
+
+	if flag then ty = ty + 1 end
+
+	return flag
 end
 
 function upAttack()
@@ -35,7 +99,17 @@ end
 
 function forward()
 	fuel()
-	return turtle.forward()
+	local flag = turtle.forward()
+
+	if flag then
+		if th%2 == 0 then
+			tz = tz + (th - 1)
+		else
+			tx = tx - (th - 2)
+		end
+	end
+	
+	return flag
 end
 
 function forwardAttack()
@@ -70,12 +144,29 @@ end
 
 function back()
 	fuel()
-	return turtle.back()
+
+	local flag = turtle.back()
+
+	if flag then
+		if th%2 == 0 then
+			tz = tz - (th - 1)
+		else
+			tx = tx + (th - 2)
+		end
+	end
+	
+	return flag
 end
 
 function down()
 	fuel()
-	return turtle.down()
+	local flag = turtle.down()
+
+	if flag then
+		ty = ty - 1
+	end
+
+	return flag
 end
 
 function downAttack()
@@ -84,12 +175,52 @@ function downAttack()
 	end
 end
 
+function downDigAttack()
+	while not down() do
+		if turtle.detectDown() then
+			turtle.digDown()
+		else
+			while turtle.attackDown() do end
+		end
+	end
+end
+
+function turnRight()
+	turtle.turnRight()
+	th = (th + 1) % 4
+end
+
+function turnLeft()
+	turtle.turnLeft()
+	th = ((th - 1) + 4) % 4
+end
+
 function digChest()
 	while turtle.suck() do
 		os.sleep(0.5)
 	end
 
 	return turtle.dig()
+end
+
+function rt()
+	return turnRight()
+end
+
+function lt()
+	return turnLeft()
+end
+
+function dn()
+	return down()
+end
+
+function fd()
+	return forward()
+end
+
+function bk()
+	return back()
 end
 
 function digChestDown()
@@ -157,4 +288,74 @@ function replaceDown(i)
 		turtle.placeDown()
 	end
 end	
-	
+
+function turnHeading(t)
+	if t == th then
+		return
+	end
+
+	if th - t == 1 or (t == 3 and th == 0) then
+		while th ~= t do
+			lt()
+		end
+	else
+		while th ~= t do
+			rt()
+		end
+	end
+end
+
+
+function moveToX(x)
+	if tx > x then
+		turnHeading(3)
+	elseif tx < x then
+		turnHeading(1)
+	end
+
+	while tx ~= x do
+		forwardDigAttack()
+	end
+end
+
+function moveToZ(z)
+	if tz > z then
+		turnHeading(0)
+	elseif tz < z then
+		turnHeading(2)
+	end
+
+	while tz ~= z do
+		forwardDigAttack()
+	end
+end
+
+function moveToY(y)
+	while y > ty do
+		upDigAttack()
+	end
+
+	while y < ty do
+		downDigAttack()
+	end
+end
+
+
+function goto(x,y,z)
+	if ty < y then
+		moveToY(y)
+	end
+
+	if math.abs(tx - x) < math.abs(tz - z) then
+		moveToX(x)
+		moveToZ(z)
+	else
+		moveToZ(z)
+		moveToX(x)
+	end
+
+	if ty > y then
+		moveToY(y)
+	end
+end
+
