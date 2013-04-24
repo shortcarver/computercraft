@@ -7,8 +7,8 @@ local JUNKEND = 6
 function isValuable()
 	-- check junk
 	for i=JUNKSTART,JUNKEND do
-		turtle.select(i)
-		if not turtle.detect() or turtle.compare() then
+		t.select(i)
+		if not t.detect() or t.compare(i) then
 			return false
 		end
 	end
@@ -17,24 +17,21 @@ function isValuable()
 end
 
 function isChest()
-	turtle.select(CHEST)
-	if turtle.compare() then
+	if t.compare(CHEST) then
 		return true
 	end
 	return false
 end
 
 function isChestDown()
-	turtle.select(CHEST)
-	if turtle.compareDown() then
+	if t.compareDown(CHEST) then
 		return true
 	end
 	return false
 end
 
 function isChestUp()
-	turtle.select(CHEST)
-	if turtle.compareUp() then
+	if t.compareUp(CHEST) then
 		return true
 	end
 	return false
@@ -42,21 +39,21 @@ end
 
 function digDown()
 	if isChestDown() then
-		turtle.select(1)
+		t.select(1)
 		t.digChestDown()
 	else
-		turtle.select(1)
-		turtle.digDown()
+		t.select(1)
+		t.digDown()
 	end
 end
 
 function digUp()
 	if isChestUp() then
-		turtle.select(1)
+		t.select(1)
 		t.digChestUp()
 	else
-		turtle.select(1)
-		turtle.digUp()
+		t.select(1)
+		t.digUp()
 	end
 end
 
@@ -66,8 +63,8 @@ function checkWalls()
 			if isChest() then
 				t.digChest()
 			end
-			turtle.select(1)
-			turtle.dig()
+			t.select(1)
+			t.dig()
 		end
 		t.turnRight()
 	end
@@ -75,19 +72,19 @@ function checkWalls()
 		if isChest() then
 			t.digChest()
 		end
-		turtle.select(1)
-		turtle.dig()
+		t.select(1)
+		t.dig()
 	end
 end
 
 function drillDown(dp)
-	if turtle.detectDown() then
+	if t.detectDown() then
 		digDown()
 	end
-	while not turtle.detectDown() do
+	while not t.detectDown() do
 		checkWalls()
 		t.downAttack()
-		if turtle.detectDown() then
+		if t.detectDown() then
 			digDown()
 		end
 		dp = dp + 1
@@ -98,7 +95,7 @@ end
 function drillUp(dp)
 	while dp > 1 do
 		checkWalls()
-		while turtle.detectUp() do
+		while t.detectUp() do
 			digUp()
 			os.sleep(0.5)
 		end
@@ -119,19 +116,19 @@ local heading = t.getLoc()
 digDown()
 for i=1,2 do
 	t.downAttack()
-	turtle.select(1)
+	t.select(1)
 	digDown()
 	depth = depth + 1
 end
 
-turtle.select(PLUG)
-turtle.placeUp()
+t.select(PLUG)
+t.placeUp()
 
 -- drill to bedrock hole 1
 depth = drillDown(depth)
 
 -- go up 10
-turtle.select(1)
+t.select(1)
 for i=1,10 do
 	t.upDigAttack()
 	depth = depth - 1
@@ -146,13 +143,13 @@ t.turnLeft()
 t.forwardDigAttack()
 t.turnRight()
 
-turtle.digDown()
-while not turtle.detectDown() do
+t.digDown()
+while not t.detectDown() do
 	while not t.dn() do
-		turtle.attackDown()
+		t.attackDown()
 	end
 
-	turtle.digDown()
+	t.digDown()
 	depth = depth + 1
 end
 
@@ -161,14 +158,35 @@ depth = drillUp(depth)
 
 -- place cap
 t.upDigAttack()
-turtle.select(PLUG)
-turtle.placeDown()
+t.select(PLUG)
+t.placeDown()
 
 t.turnHeading(heading)
 
--- go to next place
+-- clear path for player
+t.digAllUp()
+t.turnRight()
+t.forwardDigAttack()
+t.digAllUp()
+t.turnRight()
+t.forwardDigAttack()
+t.digAllUp()
+t.forwardDigAttack()
+t.digAllUp()
+t.turnRight()
+t.turnRight()
 t.forwardDigAttack()
 t.forwardDigAttack()
 t.turnLeft()
 t.forwardDigAttack()
+t.turnRight()
+
+-- go to next place
+t.forwardDigAttack()
+t.digAllUp()
+t.forwardDigAttack()
+t.digAllUp()
+t.turnLeft()
+t.forwardDigAttack()
+t.digAllUp()
 t.turnRight()

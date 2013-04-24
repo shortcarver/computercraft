@@ -5,6 +5,7 @@ local tx = 0
 local ty = 0
 local tz = 0
 local callback = nil
+local sel = 1
 
 function cb()
 	if callback ~= nil then
@@ -18,6 +19,8 @@ function fuel()
 		turtle.refuel(1)
 	end
 end
+
+-- Location Functions --
 
 function setLoc(h,x,y,z)
 	th = h
@@ -75,6 +78,86 @@ function getLocLt()
 	end
 end
 
+-- utilities --
+function select(i)
+	if i ~= sel then
+		turtle.select(i)
+		sel = i
+	end
+end
+
+function _compare(fn, i)
+	-- save current selection
+	local s = sel
+
+	-- change if set
+	if i ~= nil then
+		select(i)
+	end
+
+	-- do check
+	local flag = fn()
+
+	-- set selection back
+	if s ~= sel and s ~= 0 then
+		select(s)
+	end
+
+	-- return result
+	return flag
+end
+
+function compare(i)
+	return _compare(turtle.compare, i)
+end
+
+function compareUp(i)
+	return _compare(turtle.compareUp, i)
+end
+
+function compareDown(i)
+	return _compare(turtle.compareDown, i)
+end
+
+function detect()
+	return turtle.detect()
+end
+
+function detectUp()
+	return turtle.detect()
+end
+
+function detectDown()
+	return turtle.detect()
+end
+
+function place()
+	return turtle.place()
+end
+
+function placeUp()
+	return turtle.placeUp()
+end
+
+function placeDown()
+	return turtle.placeDown()
+end
+
+function attack()
+	return turtle.attack()
+end
+
+function attackUp()
+	return turtle.attackUp()
+end
+
+function attackDown()
+	return turtle.attackDown()
+end
+
+
+-- basic movement functions --
+
 function up()
 	fuel()
 	local flag = turtle.up()
@@ -82,27 +165,6 @@ function up()
 	if flag then ty = ty + 1 end
 	cb()
 	return flag
-end
-
-function upAttack()
-	while not up() and not turtle.detectUp() do
-		turtle.attackUp()
-	end
-end
-
-function upDigAttack()
-	while not up() do
-		-- if block, then dig
-		if turtle.detectUp() then
-			turtle.digUp()
-			os.sleep(0.5)
-		else
-			-- this is a mob, attack until nothing to attack
-			while turtle.attackUp() do end
-		end
-	end
-
-	return true;
 end
 
 function forward()
@@ -118,36 +180,6 @@ function forward()
 	end
 	cb()
 	return flag
-end
-
-function forwardAttack()
-	while not forward() and not turtle.detect() do
-		turtle.attack()
-	end
-end
-
-function forwardDig()
-	while turtle.detect() do
-		turtle.dig()
-		os.sleep(0.5)
-	end
-
-	return forward()
-end
-
-function forwardDigAttack()
-	while not forward() do
-		-- if block, then dig
-		if turtle.detect() then
-			turtle.dig()
-			os.sleep(0.5)
-		else
-			-- this is a mob, attack until nothing to attack
-			while turtle.attack() do end
-		end
-	end
-
-	return true;
 end
 
 function back()
@@ -177,22 +209,6 @@ function down()
 	return flag
 end
 
-function downAttack()
-	while not down() and not turtle.detectDown() do
-		turtle.attackDown()
-	end
-end
-
-function downDigAttack()
-	while not down() do
-		if turtle.detectDown() then
-			turtle.digDown()
-		else
-			while turtle.attackDown() do end
-		end
-	end
-end
-
 function turnRight()
 	turtle.turnRight()
 	th = (th + 1) % 4
@@ -205,14 +221,23 @@ function turnLeft()
 	cb()
 end
 
-function digChest()
-	while turtle.suck() do
-		os.sleep(0.5)
+function turnHeading(t)
+	if t == th then
+		return
 	end
 
-	return turtle.dig()
+	if th - t == 1 or (t == 3 and th == 0) then
+		while th ~= t do
+			lt()
+		end
+	else
+		while th ~= t do
+			rt()
+		end
+	end
 end
 
+-- movement shortcuts --
 function rt()
 	return turnRight()
 end
@@ -233,12 +258,36 @@ function bk()
 	return back()
 end
 
+-- dig wrappers --
+function dig()
+	return turtle.dig()
+end
+
+function digUp()
+	return turtle.digUp()
+end
+
+function digDown()
+	return turtle.digDown()
+end
+
+-- dig chests --
+
+function digChest()
+	while turtle.suck() do
+		os.sleep(0.5)
+	end
+
+	return dig()
+end
+
+
 function digChestDown()
 	while turtle.suckDown() do
 		os.sleep(0.5)
 	end
 
-	return turtle.digDown()
+	return digDown()
 end
 
 function digChestUp()
@@ -246,8 +295,24 @@ function digChestUp()
 		os.sleep(0.5)
 	end
 
-	return turtle.digUp()
+	return digUp()
 end
+
+-- dig gravel/sand
+function digAllUp()
+	while detectUp() do
+		digUp()
+		os.sleep(0.5)
+	end
+end
+
+function digAll()
+	while detect() do
+		dig()
+		os.sleep(0.5)
+	end
+end
+
 
 function isInventoryFull()
 	for i=1,16 do
@@ -259,62 +324,103 @@ function isInventoryFull()
 	return true
 end
 
-function digAllUp()
-	while turtle.detectUp() do
-		turtle.digUp()
-		os.sleep(0.5)
+
+
+-- advanced movement -- 
+
+-- move/attack commands --
+function _mvAttack(mvfn, dfn, atckfn)
+	while not mvfn() and not dfn() do
+		atckfn()
 	end
 end
 
-function digAll()
-	while turtle.detect() do
-		turtle.dig()
+function upAttack()
+	_mvAttack(up, detectUp, turtle.attackUp)
+end
+
+function downAttack()
+	_mvAttack(down, detectDown, turtle.attackDown)
+end
+
+function forwardAttack()
+	_mvAttack(forward, detect, turtle.attack)
+end
+
+-- move, dig/attack --
+function _mvDigAttack(fnMv, fnDetect, fnDig, fnAttack)
+	while not fnMv() do
+		-- if block, then dig
+		if fnDetect() then
+			fnDig()
+			os.sleep(0.5)
+		else
+			-- this is a mob, attack until nothing to attack
+			while fnAttack() do end
+		end
+	end
+
+	return true;
+end
+
+function upDigAttack()
+	_mvDigAttack(up, detectUp, turtle.digUp, turtle.attackUp)
+end
+
+function forwardDigAttack()
+	_mvDigAttack(forward, detect, turtle.dig, turtle.attack)
+end
+
+function downDigAttack()
+	_mvDigAttack(down, detectDown, digDown, turtle.attackDown)
+end
+
+
+-- move/dig --
+function _mvDig(fnDetect, fnMove, fnDig)
+	while fnDetect() do
+		fnDig()
 		os.sleep(0.5)
 	end
+
+	return fnMove()
+end
+
+function forwardDig()
+	_mvDig(detect, dig, forward)
+end
+
+function upDig()
+	_mvDig(detectUp, digUp, up)
+end
+
+function downDig()
+	_mvDig(detectDown, digDown, down)
 end
 
 
 --replaces the item in the world with the item in slot i
-function replace(i)
-	turtle.select(i)
-	if not turtle.compare() or not turtle.detect() then
-		turtle.dig()
-		turtle.place()
-	end
-end	
-	
-function replaceUp(i)
-	turtle.select(i)
-	if not turtle.compareUp() or not turtle.detectUp() then
-		turtle.digUp()
-		turtle.placeUp()
-	end
-end	
-	
-function replaceDown(i)
-	turtle.select(i)
-	if not turtle.compareDown() or not turtle.detectDown() then
-		turtle.digDown()
-		turtle.placeDown()
-	end
-end	
-
-function turnHeading(t)
-	if t == th then
-		return
-	end
-
-	if th - t == 1 or (t == 3 and th == 0) then
-		while th ~= t do
-			lt()
-		end
-	else
-		while th ~= t do
-			rt()
-		end
+function _replace(fnCompare, fnDetect, fnDig, fnPlace, i)
+	select(i)
+	if not fnCompare() or not fnDetect() then
+		fnDig()
+		fnPlace()
 	end
 end
 
+function replace(i)
+	_replace(compare, detect, dig, turtle.place, i)
+end	
+	
+function replaceUp(i)
+	_replace(compareUp, detectUp, digUp, turtle.placeUp, i)
+end	
+	
+function replaceDown(i)
+	_replace(compareDown, detectDown, digDown, turtle.placeDown, i)
+end	
+
+-- coordinate based movement --
 
 function moveToX(x)
 	if tx > x then
