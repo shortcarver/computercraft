@@ -4,6 +4,13 @@ local th = 0
 local tx = 0
 local ty = 0
 local tz = 0
+local callback = nil
+
+function cb()
+	if callback ~= nil then
+		callback(th,tx,ty,tz)
+	end
+end
 
 function fuel()
 	if turtle.getFuelLevel() <= 10 then
@@ -17,6 +24,7 @@ function setLoc(h,x,y,z)
 	tx = x
 	ty = y
 	tz = z
+	cb()
 end
 
 function getLoc()
@@ -72,7 +80,7 @@ function up()
 	local flag = turtle.up()
 
 	if flag then ty = ty + 1 end
-
+	cb()
 	return flag
 end
 
@@ -108,7 +116,7 @@ function forward()
 			tx = tx - (th - 2)
 		end
 	end
-	
+	cb()
 	return flag
 end
 
@@ -154,7 +162,7 @@ function back()
 			tx = tx + (th - 2)
 		end
 	end
-	
+	cb()
 	return flag
 end
 
@@ -165,7 +173,7 @@ function down()
 	if flag then
 		ty = ty - 1
 	end
-
+	cb()
 	return flag
 end
 
@@ -188,11 +196,13 @@ end
 function turnRight()
 	turtle.turnRight()
 	th = (th + 1) % 4
+	cb()
 end
 
 function turnLeft()
 	turtle.turnLeft()
 	th = ((th - 1) + 4) % 4
+	cb()
 end
 
 function digChest()

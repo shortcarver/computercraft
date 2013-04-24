@@ -1,9 +1,9 @@
 
 local scannedLocations = {}
-local newLocations = pq.create(true)
+local newLocations = pq.create(false)
 
 function hashLoc(x,y,z)
-	return (x + 500)..","..(z + 500)..","..(y + 500)
+	return (y + 500)..","..(x + 500)..","..(z + 500)
 end
 
 function pushLoc(x,y,z)
@@ -31,7 +31,6 @@ end
 function scan()
 	local h,x,y,z = t.getLoc()
 
-
 	if turtle.detectUp() then
 		turtle.digUp()
 		x,y,z = t.getLocUp()
@@ -44,13 +43,18 @@ function scan()
 		pushLoc(x,y,z)
 	end
 
-	for i=1,4 do
+	for i=1,3 do
 		if turtle.detect() then
 			turtle.dig()
 			x,y,z = t.getLocFd()
 			pushLoc(x,y,z)
 		end
 		t.rt()
+	end
+	if turtle.detect() then
+		turtle.dig()
+		x,y,z = t.getLocFd()
+		pushLoc(x,y,z)
 	end
 
 	h,x,y,z = t.getLoc()

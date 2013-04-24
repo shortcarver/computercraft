@@ -27,3 +27,5 @@ while height > 0 do
 	height = height - 1
 end
 
+while t.dn() do end
+

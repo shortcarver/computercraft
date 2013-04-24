@@ -9,12 +9,18 @@ function findMats()
 end
 
 function fillWalls()
-	for i=1,4 do
+	for i=1,3 do
 		while turtle.attack() do
 		end
-		findMats()
+		if findMats() then
+			turtle.place()
+		end
+		t.turnRight()
+	end
+	while turtle.attack() do
+	end
+	if findMats() then
 		turtle.place()
-		turtle.turnRight()
 	end
 end
 
@@ -26,8 +32,16 @@ while not turtle.detectDown() do
 end
 
 for i=1,depth do
-	fillWalls()
+	if findMats() then
+		turtle.placeDown()
+		fillWalls()
+	end
 	t.upAttack()
-	findMats()
-	turtle.placeDown()
 end
+if findMats() then
+	turtle.placeDown()
+	fillWalls()
+end
+
+t.up()
+t.up()

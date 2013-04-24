@@ -61,7 +61,7 @@ function digUp()
 end
 
 function checkWalls()
-	for i=1,4 do
+	for i=1,3 do
 		if isValuable() then
 			if isChest() then
 				t.digChest()
@@ -70,6 +70,13 @@ function checkWalls()
 			turtle.dig()
 		end
 		t.turnRight()
+	end
+	if isValuable() then
+		if isChest() then
+			t.digChest()
+		end
+		turtle.select(1)
+		turtle.dig()
 	end
 end
 
@@ -106,6 +113,7 @@ end
 -- start program --
 
 local depth = 0
+local heading = t.getLoc()
 
 -- go down, place cap
 digDown()
@@ -129,6 +137,8 @@ for i=1,10 do
 	depth = depth - 1
 end
 
+t.turnHeading(heading)
+
 -- go to next position
 t.forwardDigAttack()
 t.forwardDigAttack()
@@ -136,8 +146,15 @@ t.turnLeft()
 t.forwardDigAttack()
 t.turnRight()
 
--- drill down
-depth = drillDown(depth)
+turtle.digDown()
+while not turtle.detectDown() do
+	while not t.dn() do
+		turtle.attackDown()
+	end
+
+	turtle.digDown()
+	depth = depth + 1
+end
 
 -- dig up -- hole 2
 depth = drillUp(depth)
@@ -146,6 +163,8 @@ depth = drillUp(depth)
 t.upDigAttack()
 turtle.select(PLUG)
 turtle.placeDown()
+
+t.turnHeading(heading)
 
 -- go to next place
 t.forwardDigAttack()

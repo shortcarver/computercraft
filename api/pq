@@ -19,6 +19,7 @@ end
 
 function pop(q)
 	local val = q.heap[0].v
+	local key = q.heap[0].k
 
 	q.heap[0] = q.heap[q.count-1]
 
@@ -32,7 +33,7 @@ function pop(q)
 		_minHeapify(q, 0)
 	end
 
-	return val
+	return val, key
 end
 
 function put(q, value, key)
