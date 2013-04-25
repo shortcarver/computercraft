@@ -107,86 +107,228 @@ function drillUp(dp)
 end
 
 
--- start program --
+function mine()
+	local depth = 0
+	local heading = t.getLoc()
 
-local depth = 0
-local heading = t.getLoc()
-
--- go down, place cap
-digDown()
-for i=1,2 do
-	t.downAttack()
-	t.select(1)
+	-- go down, place cap
 	digDown()
-	depth = depth + 1
-end
-
-t.select(PLUG)
-t.placeUp()
-
--- drill to bedrock hole 1
-depth = drillDown(depth)
-
--- go up 10
-t.select(1)
-for i=1,10 do
-	t.upDigAttack()
-	depth = depth - 1
-end
-
-t.turnHeading(heading)
-
--- go to next position
-t.forwardDigAttack()
-t.forwardDigAttack()
-t.turnLeft()
-t.forwardDigAttack()
-t.turnRight()
-
-t.digDown()
-while not t.detectDown() do
-	while not t.dn() do
-		t.attackDown()
+	for i=1,2 do
+		t.downAttack()
+		t.select(1)
+		digDown()
+		depth = depth + 1
 	end
 
+	t.select(PLUG)
+	t.placeUp()
+
+	-- drill to bedrock hole 1
+	depth = drillDown(depth)
+
+	-- go up 10
+	t.select(1)
+	for i=1,6 do
+		t.upDigAttack()
+		depth = depth - 1
+	end
+
+	t.turnHeading(heading)
+
+	-- go to next position
+	t.forwardDigAttack()
+	t.forwardDigAttack()
+	t.turnLeft()
+	t.forwardDigAttack()
+	t.turnRight()
+
 	t.digDown()
-	depth = depth + 1
+	while not t.detectDown() do
+		while not t.dn() do
+			t.attackDown()
+		end
+
+		t.digDown()
+		depth = depth + 1
+	end
+
+	-- dig up -- hole 2
+	depth = drillUp(depth)
+
+	-- place cap
+	t.upDigAttack()
+	t.select(PLUG)
+	t.placeDown()
+
+	t.turnHeading(heading)
+
+	-- clear path for player
+	t.digAllUp()
+	t.placeDown(2)
+	t.turnRight()
+	t.forwardDigAttack()
+	t.digAllUp()
+	t.placeDown(2)
+	t.turnRight()
+	t.forwardDigAttack()
+	t.digAllUp()
+	t.placeDown(2)
+	t.forwardDigAttack()
+	t.digAllUp()
+	t.placeDown(2)
+	t.turnRight()
+
+	t.forwardDigAttack()
+	t.digAllUp()
+	t.placeDown(2)
+	t.turnRight()
+	t.forwardDigAttack()
+	t.digAllUp()
+	t.placeDown(2)
+	t.forwardDigAttack()
+	t.digAllUp()
+	t.placeDown(2)
 end
 
--- dig up -- hole 2
-depth = drillUp(depth)
+function next()
+	-- go to next place
+	t.select(2)
+	t.digAllUp()
+	t.placeDown(2)
+	t.lt()
+	t.forwardDigAttack()
 
--- place cap
-t.upDigAttack()
-t.select(PLUG)
-t.placeDown()
+	t.digAllUp()
+	t.placeDown(2)
+	t.rt()
+	t.forwardDigAttack()
 
-t.turnHeading(heading)
+	t.digAllUp()
+	t.placeDown(2)
+	t.rt()
+	t.forwardDigAttack()
 
--- clear path for player
-t.digAllUp()
-t.turnRight()
-t.forwardDigAttack()
-t.digAllUp()
-t.turnRight()
-t.forwardDigAttack()
-t.digAllUp()
-t.forwardDigAttack()
-t.digAllUp()
-t.turnRight()
-t.turnRight()
-t.forwardDigAttack()
-t.forwardDigAttack()
-t.turnLeft()
-t.forwardDigAttack()
-t.turnRight()
+	t.digAllUp()
+	t.placeDown(2)
+	t.lt()
+	t.forwardDigAttack()
 
--- go to next place
-t.forwardDigAttack()
-t.digAllUp()
-t.forwardDigAttack()
-t.digAllUp()
-t.turnLeft()
-t.forwardDigAttack()
-t.digAllUp()
-t.turnRight()
+	t.digAllUp()
+	t.placeDown(2)
+	t.lt()
+	t.forwardDigAttack()
+
+	t.digAllUp()
+	t.placeDown(2)
+	t.rt()
+end
+
+function dumpChest()
+	local map = {
+		32,13, 64, 1,
+		 1, 1,  0, 0,
+		 0, 0,  0, 0,
+		 0, 0,  0, 0
+	}
+
+	t.rt()
+	t.rt()
+
+	t.place(3)
+	for i=1,16 do
+		if turtle.getItemCount(i) > map[i] then
+			t.select(i)
+			turtle.drop(turtle.getItemCount(i) - map[i])
+		end
+	end
+
+	t.rt()
+	t.rt()
+end
+
+function set(moves, sideMoves, sideLength, sideCount)
+	local f,err = fs.open("/core.conf", "w")
+	f.write(textutils.serialize({
+		moves=moves,
+		sideMoves=sideMoves,
+		sideLength=sideLength,
+		sideCount=sideCount}))
+	f.flush()
+	f.close()
+end
+
+function get()
+	if not fs.exists("/core.conf") then
+		return nil
+	end
+
+	local f, err = fs.open("/core.conf", "r")
+
+	local data = f.readLine()
+
+	f.close()
+
+	return textutils.unserialize(data)
+end
+
+function continue()
+	local data = get()
+	local moves = data.moves
+	local sideMoves = data.sideMoves
+	local sideLength = data.sideLength
+	local sideCount = data.sideCount
+
+	if moves % 2 == 0 then
+		mine()
+	else
+		next()
+	end
+
+	sideMoves = sideMoves + 1
+
+	if sideMoves >= sideLength then
+		t.lt()
+		sideCount = sideCount + 1
+		sideMoves = 0
+	end
+
+	if moves % 2 == 0 then
+		dumpChest()
+	end
+
+	moves = moves + 1
+
+	if sideCount >= 2 then
+		sideLength = sideLength + 1
+		sideCount = 0
+	end
+
+	set(moves,sideMoves,sideLength,sideCount)
+end
+
+
+-- start program --
+
+local args = { ... }
+
+local command = args[1]
+
+if command == "mine" then
+	mine()
+elseif command == "next" then
+	next()
+elseif command == "start" then
+	set(0,0,1,0)
+	continue()
+elseif command == "continue" then
+	local c = 1
+	if args[2] ~= nil then
+		c = tonumber(args[2])
+	end
+
+	for i=1,c do
+		continue()
+	end
+end
+
+

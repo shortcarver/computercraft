@@ -13,13 +13,6 @@ function cb()
 	end
 end
 
-function fuel()
-	if turtle.getFuelLevel() <= 10 then
-		turtle.select(1)
-		turtle.refuel(1)
-	end
-end
-
 -- Location Functions --
 
 function setLoc(h,x,y,z)
@@ -124,23 +117,36 @@ function detect()
 end
 
 function detectUp()
-	return turtle.detect()
+	return turtle.detectUp()
 end
 
 function detectDown()
-	return turtle.detect()
+	return turtle.detectDown()
 end
 
-function place()
-	return turtle.place()
+function _place(fn, i)
+	local s = sel
+	if i ~= nil then
+		select(i)
+	end
+
+	local flag = fn()
+
+	select(s)
+
+	return flag
 end
 
-function placeUp()
-	return turtle.placeUp()
+function place(i)
+	return _place(turtle.place, i)
 end
 
-function placeDown()
-	return turtle.placeDown()
+function placeUp(i)
+	return _place(turtle.placeUp, i)
+end
+
+function placeDown(i)
+	return _place(turtle.placeDown, i)
 end
 
 function attack()
@@ -157,6 +163,12 @@ end
 
 
 -- basic movement functions --
+function fuel()
+	if turtle.getFuelLevel() <= 10 then
+		select(1)
+		turtle.refuel(1)
+	end
+end
 
 function up()
 	fuel()
@@ -377,7 +389,7 @@ end
 
 
 -- move/dig --
-function _mvDig(fnDetect, fnMove, fnDig)
+function _mvDig(fnDetect, fnDig, fnMove)
 	while fnDetect() do
 		fnDig()
 		os.sleep(0.5)

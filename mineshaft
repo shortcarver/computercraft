@@ -1,0 +1,57 @@
+local args = { ... }
+
+local depth = tonumber(args[1])
+
+function findFiller()
+	for i=4,16 do
+		if turtle.getItemCount(i) > 0 then
+			t.select(i)
+			return true
+		end
+	end
+	return false
+end
+
+for i=1,depth do
+	-- next spot
+	t.downDig()
+
+	-- repair walls
+	findFiller()
+	t.rt()
+	t.place()
+	t.rt()
+	t.place()
+	t.rt()
+	t.place()
+	t.rt()
+	t.placeDown()
+
+	-- dig out ladder spot
+	t.select(1)
+	t.dig()
+	t.fd()
+
+	-- build walls
+	findFiller()
+	t.place()
+	t.rt()
+	t.place()
+	t.lt()
+	t.lt()
+	t.place()
+	t.rt()
+	t.placeDown()
+
+	-- place ladder
+	t.back()
+	t.place(2)
+
+
+	if i % 5 == 1 then
+		t.placeUp(3)
+	else
+		findFiller()
+		t.placeUp()
+	end
+end
