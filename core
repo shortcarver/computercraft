@@ -136,6 +136,7 @@ function mine()
 	t.turnHeading(heading)
 
 	-- go to next position
+	t.select(1)
 	t.forwardDigAttack()
 	t.forwardDigAttack()
 	t.turnLeft()
@@ -156,6 +157,7 @@ function mine()
 	depth = drillUp(depth)
 
 	-- place cap
+	t.select(1)
 	t.upDigAttack()
 	t.select(PLUG)
 	t.placeDown()
@@ -163,6 +165,7 @@ function mine()
 	t.turnHeading(heading)
 
 	-- clear path for player
+	t.select(1)
 	t.digAllUp()
 	t.placeDown(2)
 	t.turnRight()
@@ -192,7 +195,7 @@ end
 
 function next()
 	-- go to next place
-	t.select(2)
+	t.select(1)
 	t.digAllUp()
 	t.placeDown(2)
 	t.lt()
@@ -304,8 +307,38 @@ function continue()
 	end
 
 	set(moves,sideMoves,sideLength,sideCount)
+
+	return moves % 2 == 1
 end
 
+function skip()
+	local data = get()
+	local moves = data.moves
+	local sideMoves = data.sideMoves
+	local sideLength = data.sideLength
+	local sideCount = data.sideCount
+
+	next()
+
+	sideMoves = sideMoves + 1
+
+	if sideMoves >= sideLength then
+		t.lt()
+		sideCount = sideCount + 1
+		sideMoves = 0
+	end
+
+	moves = moves + 1
+
+	if sideCount >= 2 then
+		sideLength = sideLength + 1
+		sideCount = 0
+	end
+
+	set(moves,sideMoves,sideLength,sideCount)
+
+	return moves % 2 == 1
+end
 
 -- start program --
 
@@ -319,7 +352,6 @@ elseif command == "next" then
 	next()
 elseif command == "start" then
 	set(0,0,1,0)
-	continue()
 elseif command == "continue" then
 	local c = 1
 	if args[2] ~= nil then
@@ -327,7 +359,20 @@ elseif command == "continue" then
 	end
 
 	for i=1,c do
-		continue()
+		if continue() then
+			continue()
+		end
+	end
+elseif command == "skip" then
+	local c = 1
+	if args[2] ~= nil then
+		c = tonumber(args[2])
+	end
+
+	for i=1,c do
+		if skip() then
+			skip()
+		end
 	end
 end
 
