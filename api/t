@@ -1,87 +1,89 @@
 -- turtle short cuts. mainly handles things like fuel, and special digging
 
-local th = 0
-local tx = 0
-local ty = 0
-local tz = 0
-local callback = nil
-local sel = 1
+local _th = 0
+local _tx = 0
+local _ty = 0
+local _tz = 0
+local _callback = nil
+local _sel = 1
+local FALL_TIME = 0.5
+local SUCK_TIME = 0.5
 
 function cb()
-	if callback ~= nil then
-		callback(th,tx,ty,tz)
+	if _callback ~= nil then
+		_callback(_th,_tx,_ty,_tz)
 	end
 end
 
 -- Location Functions --
 
 function setLoc(h,x,y,z)
-	th = h
-	tx = x
-	ty = y
-	tz = z
+	_th = h
+	_tx = x
+	_ty = y
+	_tz = z
 	cb()
 end
 
 function getLoc()
-	return th,tx,ty,tz
+	return _th,_tx,_ty,_tz
 end
 
 function getLocUp()
-	return tx,ty+1,tz
+	return _tx,_ty+1,_tz
 end
 
 function getLocDn()
-	return tx,ty-1,tz
+	return _tx,_ty-1,_tz
 end
 
 function getLocFd()
-	if th%2 == 0 then
-		return tx, ty, tz + (th - 1)
+	if _th%2 == 0 then
+		return _tx, _ty, _tz + (_th - 1)
 	else
-		return tx - (th - 2), ty, tz
+		return _tx - (_th - 2), _ty, _tz
 	end
 end
 
 function getLocBk()
-	if th%2 == 0 then
-		return tx, ty, tz - (th - 1)
+	if _th%2 == 0 then
+		return _tx, _ty, _tz - (_th - 1)
 	else
-		return tx + (th - 2), ty, tz
+		return _tx + (_th - 2), _ty, _tz
 	end
 end
 
 function getLocRt()
-	local h = (th + 1) % 4
+	local h = (_th + 1) % 4
 
 	if h%2 == 0 then
-		return tx, ty, tz + (h - 1)
+		return _tx, _ty, _tz + (h - 1)
 	else
-		return tx - (h - 2), ty, tz
+		return _tx - (h - 2), _ty, _tz
 	end
 end
 
 function getLocLt()
-	local h = ((th - 1) + 4) % 4
+	local h = ((_th - 1) + 4) % 4
 
 	if h%2 == 0 then
-		return tx, ty, tz + (h - 1)
+		return _tx, _ty, _tz + (h - 1)
 	else
-		return tx - (h - 2), ty, tz
+		return _tx - (h - 2), _ty, _tz
 	end
 end
 
 -- utilities --
 function select(i)
-	if i ~= sel then
+	if i ~= _sel then
 		turtle.select(i)
-		sel = i
+		_sel = i
 	end
 end
 
 function _compare(fn, i)
 	-- save current selection
-	local s = sel
+	local s = _sel
 
 	-- change if set
 	if i ~= nil then
@@ -92,7 +94,7 @@ function _compare(fn, i)
 	local flag = fn()
 
 	-- set selection back
-	if s ~= sel and s ~= 0 then
+	if s ~= _sel and s ~= 0 then
 		select(s)
 	end
 
@@ -125,7 +127,7 @@ function detectDown()
 end
 
 function _place(fn, i)
-	local s = sel
+	local s = _sel
 	if i ~= nil then
 		select(i)
 	end
@@ -174,7 +176,7 @@ function up()
 	fuel()
 	local flag = turtle.up()
 
-	if flag then ty = ty + 1 end
+	if flag then _ty = _ty + 1 end
 	cb()
 	return flag
 end
@@ -184,10 +186,10 @@ function forward()
 	local flag = turtle.forward()
 
 	if flag then
-		if th%2 == 0 then
-			tz = tz + (th - 1)
+		if _th%2 == 0 then
+			_tz = _tz + (_th - 1)
 		else
-			tx = tx - (th - 2)
+			_tx = _tx - (_th - 2)
 		end
 	end
 	cb()
@@ -200,10 +202,10 @@ function back()
 	local flag = turtle.back()
 
 	if flag then
-		if th%2 == 0 then
-			tz = tz - (th - 1)
+		if _th%2 == 0 then
+			_tz = _tz - (_th - 1)
 		else
-			tx = tx + (th - 2)
+			_tx = _tx + (_th - 2)
 		end
 	end
 	cb()
@@ -215,7 +217,7 @@ function down()
 	local flag = turtle.down()
 
 	if flag then
-		ty = ty - 1
+		_ty = _ty - 1
 	end
 	cb()
 	return flag
@@ -223,27 +225,27 @@ end
 
 function turnRight()
 	turtle.turnRight()
-	th = (th + 1) % 4
+	_th = (_th + 1) % 4
 	cb()
 end
 
 function turnLeft()
 	turtle.turnLeft()
-	th = ((th - 1) + 4) % 4
+	_th = ((_th - 1) + 4) % 4
 	cb()
 end
 
 function turnHeading(t)
-	if t == th then
+	if t == _th then
 		return
 	end
 
-	if th - t == 1 or (t == 3 and th == 0) then
-		while th ~= t do
+	if _th - t == 1 or (t == 3 and _th == 0) then
+		while _th ~= t do
 			lt()
 		end
 	else
-		while th ~= t do
+		while _th ~= t do
 			rt()
 		end
 	end
@@ -284,45 +286,44 @@ function digDown()
 end
 
 -- dig chests --
-
-function digChest()
-	while turtle.suck() do
-		os.sleep(0.5)
+function _digChest(fnSuck, fnDig)
+	while fnSuck() do
+		os.sleep(SUCK_TIME)
 	end
 
-	return dig()
+	return fnDig()
+end
+
+function digChest()
+	_digChest(turtle.suck, dig)
 end
 
 
 function digChestDown()
-	while turtle.suckDown() do
-		os.sleep(0.5)
-	end
-
-	return digDown()
+	_digChest(turtle.suckDown, digDown)
 end
 
 function digChestUp()
-	while turtle.suckUp() do
-		os.sleep(0.5)
-	end
-
-	return digUp()
+	_digChest(turtle.suckUp, digUp)
 end
 
 -- dig gravel/sand
-function digAllUp()
-	while detectUp() do
-		digUp()
-		os.sleep(0.5)
+function _digAll(fnDetect, fnDig)
+	while fnDetect() do
+		if not fnDig() then
+			return false
+		end
+		os.sleep(FALL_TIME)
 	end
+	return true
+end
+
+function digAllUp()
+	_digAll(detectUp, digUp)
 end
 
 function digAll()
-	while detect() do
-		dig()
-		os.sleep(0.5)
-	end
+	_digAll(detect, dig)
 end
 
 
@@ -365,7 +366,7 @@ function _mvDigAttack(fnMv, fnDetect, fnDig, fnAttack)
 		-- if block, then dig
 		if fnDetect() then
 			fnDig()
-			os.sleep(0.5)
+			os.sleep(FALL_TIME)
 		else
 			-- this is a mob, attack until nothing to attack
 			while fnAttack() do end
@@ -392,7 +393,7 @@ end
 function _mvDig(fnDetect, fnDig, fnMove)
 	while fnDetect() do
 		fnDig()
-		os.sleep(0.5)
+		os.sleep(FALL_TIME)
 	end
 
 	return fnMove()
@@ -435,46 +436,46 @@ end
 -- coordinate based movement --
 
 function moveToX(x)
-	if tx > x then
+	if _tx > x then
 		turnHeading(3)
-	elseif tx < x then
+	elseif _tx < x then
 		turnHeading(1)
 	end
 
-	while tx ~= x do
+	while _tx ~= x do
 		forwardDigAttack()
 	end
 end
 
 function moveToZ(z)
-	if tz > z then
+	if _tz > z then
 		turnHeading(0)
-	elseif tz < z then
+	elseif _tz < z then
 		turnHeading(2)
 	end
 
-	while tz ~= z do
+	while _tz ~= z do
 		forwardDigAttack()
 	end
 end
 
 function moveToY(y)
-	while y > ty do
+	while y > _ty do
 		upDigAttack()
 	end
 
-	while y < ty do
+	while y < _ty do
 		downDigAttack()
 	end
 end
 
 
 function goto(x,y,z)
-	if ty < y then
+	if _ty < y then
 		moveToY(y)
 	end
 
-	if math.abs(tx - x) < math.abs(tz - z) then
+	if math.abs(_tx - x) < math.abs(_tz - z) then
 		moveToX(x)
 		moveToZ(z)
 	else
@@ -482,7 +483,7 @@ function goto(x,y,z)
 		moveToX(x)
 	end
 
-	if ty > y then
+	if _ty > y then
 		moveToY(y)
 	end
 end

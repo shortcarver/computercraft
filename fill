@@ -1,5 +1,5 @@
 function findMats()
-	for i=2,16 do
+	for i=3,16 do
 		if turtle.getItemCount(i) > 0 then
 			t.select(i)
 			return true
@@ -26,8 +26,11 @@ end
 
 local depth = 0
 
+t.digDown()
+
+
 while not t.detectDown() do
-	t.downAttack()
+	t.downDigAttack()
 	depth = depth + 1
 end
 
@@ -36,7 +39,7 @@ for i=1,depth do
 		t.placeDown()
 		fillWalls()
 	end
-	t.upAttack()
+	t.upDigAttack()
 end
 if findMats() then
 	t.placeDown()
@@ -44,4 +47,4 @@ if findMats() then
 end
 
 t.up()
-t.up()
+t.placeDown(2)

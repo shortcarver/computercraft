@@ -5,10 +5,11 @@ while true do
 	end
 
 	if count < 1024 then
-		turtle.digDown()
+		t.digDown()
+		t.dig()
 	else
 		os.sleep(10)
 	end
 
-	turtle.drop()
+	turtle.dropUp()
 end

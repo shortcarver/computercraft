@@ -53,7 +53,7 @@ function digUp()
 		t.digChestUp()
 	else
 		t.select(1)
-		t.digUp()
+		t.digAllUp()
 	end
 end
 
@@ -64,7 +64,7 @@ function checkWalls()
 				t.digChest()
 			end
 			t.select(1)
-			t.dig()
+			t.digAll()
 		end
 		t.turnRight()
 	end
@@ -73,7 +73,7 @@ function checkWalls()
 			t.digChest()
 		end
 		t.select(1)
-		t.dig()
+		t.digAll()
 	end
 end
 
