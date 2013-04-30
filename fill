@@ -32,6 +32,7 @@ t.digDown()
 while not t.detectDown() do
 	t.downDigAttack()
 	depth = depth + 1
+	t.digDown()
 end
 
 for i=1,depth do

@@ -6,8 +6,8 @@ local _ty = 0
 local _tz = 0
 local _callback = nil
 local _sel = 1
-local FALL_TIME = 0.5
-local SUCK_TIME = 0.5
+local FALL_TIME = 0.1
+local SUCK_TIME = 0.1
 
 function cb()
 	if _callback ~= nil then
