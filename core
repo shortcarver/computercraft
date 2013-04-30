@@ -4,6 +4,21 @@ local CHEST = 3
 local JUNKSTART = 4
 local JUNKEND = 6
 
+-- single turtle
+local SIDE_LENGTH_START = 1
+local SIDE_COUNT_LIMIT = 2
+local SIDE_LENGTH_INCREMENT = 1
+
+-- dual turtle
+-- local SIDE_LENGTH_START = 2
+-- local SIDE_COUNT_LIMIT = 2
+-- local SIDE_LENGTH_INCREMENT = 2
+
+-- quad turtle
+-- local SIDE_LENGTH_START = 1
+-- local SIDE_COUNT_LIMIT = 1
+-- local SIDE_LENGTH_INCREMENT = 2
+
 function isValuable()
 	-- check junk
 	for i=JUNKSTART,JUNKEND do
@@ -301,8 +316,8 @@ function continue()
 
 	moves = moves + 1
 
-	if sideCount >= 2 then
-		sideLength = sideLength + 1
+	if sideCount >= SIDE_COUNT_LIMIT then
+		sideLength = sideLength + SIDE_LENGTH_INCREMENT
 		sideCount = 0
 	end
 
@@ -330,8 +345,8 @@ function skip()
 
 	moves = moves + 1
 
-	if sideCount >= 2 then
-		sideLength = sideLength + 1
+	if sideCount >= SIDE_COUNT_LIMIT then
+		sideLength = sideLength + SIDE_LENGTH_INCREMENT
 		sideCount = 0
 	end
 
@@ -351,7 +366,7 @@ if command == "mine" then
 elseif command == "next" then
 	next()
 elseif command == "start" then
-	set(0,0,1,0)
+	set(0,0,SIDE_LENGTH_START,0)
 elseif command == "continue" then
 	local c = 1
 	if args[2] ~= nil then
