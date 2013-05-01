@@ -5,9 +5,9 @@ local JUNKSTART = 4
 local JUNKEND = 6
 
 -- single turtle
-local SIDE_LENGTH_START = 1
-local SIDE_COUNT_LIMIT = 2
-local SIDE_LENGTH_INCREMENT = 1
+-- local SIDE_LENGTH_START = 1
+-- local SIDE_COUNT_LIMIT = 2
+-- local SIDE_LENGTH_INCREMENT = 1
 
 -- dual turtle
 -- local SIDE_LENGTH_START = 2
@@ -15,9 +15,9 @@ local SIDE_LENGTH_INCREMENT = 1
 -- local SIDE_LENGTH_INCREMENT = 2
 
 -- quad turtle
--- local SIDE_LENGTH_START = 1
--- local SIDE_COUNT_LIMIT = 1
--- local SIDE_LENGTH_INCREMENT = 2
+local SIDE_LENGTH_START = 1
+local SIDE_COUNT_LIMIT = 1
+local SIDE_LENGTH_INCREMENT = 2
 
 function isValuable()
 	-- check junk

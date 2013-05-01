@@ -25,6 +25,10 @@ function setLoc(h,x,y,z)
 	cb()
 end
 
+function getHeading()
+	return _th
+end
+
 function getLoc()
 	return _th,_tx,_ty,_tz
 end
@@ -75,6 +79,10 @@ end
 
 -- utilities --
 function select(i)
+	if i == nil then
+		return
+	end
+
 	if i ~= _sel then
 		turtle.select(i)
 		_sel = i

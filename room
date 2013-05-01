@@ -1,0 +1,167 @@
+-- builds a room from the inside
+
+
+local args = { ... }
+
+
+local width = tonumber(args[1])
+local depth = tonumber(args[2])
+local height = tonumber(args[3])
+local options = args[4]
+
+print(options)
+
+local bLeft = options:find("l") ~= nil
+local bRight = options:find("r") ~= nil
+local bFront = options:find("f") ~= nil
+local bBack = options:find("b") ~= nil
+local bUp = options:find("u") ~= nil
+local bDown = options:find("d") ~= nil
+
+local fillDir = {}
+fillDir[0] = bFront
+fillDir[1] = bRight
+fillDir[2] = bBack
+fillDir[3] = bLeft
+
+local isOnFloor = false
+local isOnWall = false
+local isOnRoof = false
+
+function pickMats()
+	for i=2,16 do
+		if turtle.getItemCount(i) > 0 then
+			t.select(i)
+			return true
+		end
+	end
+
+	return false
+end
+
+function digLine(length, fillLeft, fillRight, fillUp, fillDown)
+	pickMats()
+	for i=1,length-1 do
+		if fillLeft then
+			t.lt()
+			t.replace()
+			t.rt()
+		end
+
+		if fillRight then
+			t.rt()
+			t.replace()
+			t.lt()
+		end
+
+		if fillUp then
+			t.replaceUp()
+		end
+
+		if fillDown then
+			t.replaceDown()
+		end
+
+		t.forwardDigAttack()
+		pickMats()
+	end
+
+	if fillLeft then
+		t.lt()
+		t.replace()
+		t.rt()
+	end
+
+	if fillRight then
+		t.rt()
+		t.replace()
+		t.lt()
+	end
+
+	if fillUp then
+		t.replaceUp()
+	end
+
+	if fillDown then
+		t.replaceDown()
+	end
+
+	if fillDir[t.getHeading()] then
+		t.replace()
+	end
+end
+
+function newLineRight(fillWall)
+	t.rt()
+	t.forwardDigAttack()
+	pickMats()
+	if fillWall then
+		t.lt()
+		t.replace()
+		t.rt()
+	end
+	t.rt()
+end
+
+function newLineLeft(fillWall)
+	t.lt()
+	t.forwardDigAttack()
+	pickMats()
+	if fillWall then
+		t.rt()
+		t.replace() 
+		t.lt()
+	end
+	t.lt()
+end
+
+t.setLoc(0,0,0,0)
+
+pickMats()
+
+for y=1,height do
+	for x=1,width do
+		-- need to detect left side
+		local fillLeft = (x == 1) and bLeft
+		local fillRight = (x == width) and bRight
+		local fillUp = (y == height) and bUp
+		local fillDown = (y == 1) and bDown
+
+		if x % 2 == 1 then
+			if bBack then
+				t.rt()
+				t.rt()
+				t.replace()
+				t.rt()
+				t.rt()
+			end
+			digLine(depth,fillLeft,fillRight,fillUp,fillDown)
+		else
+			if bFront then
+				t.rt()
+				t.rt()
+				t.replace()
+				t.rt()
+				t.rt()
+			end
+			digLine(depth,fillRight,fillLeft,fillUp,fillDown)
+		end
+
+		if x % 2 == 1 and x < width then
+			newLineRight(fillFront)
+		elseif x % 2 == 0 and x < width then
+			newLineLeft(fillBack)
+		end
+	end
+
+	if y < height then
+		t.moveToX(0)
+		t.moveToZ(0)
+		t.turnHeading(0)
+		t.upDigAttack()
+		pickMats()
+	end
+end
+
+t.goto(0,0,0)
+t.turnHeading(0)
