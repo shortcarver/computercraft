@@ -35,7 +35,7 @@ while not t.detectDown() do
 	t.digDown()
 end
 
-for i=1,depth do
+for i=1,depth-1 do
 	if findMats() then
 		t.placeDown()
 		fillWalls()

@@ -29,14 +29,21 @@ local isOnWall = false
 local isOnRoof = false
 
 function pickMats()
-	for i=2,16 do
-		if turtle.getItemCount(i) > 0 then
-			t.select(i)
-			return true
-		end
+	if turtle.getItemCount(2) >= 10 then
+		t.select(2)
+		return
 	end
 
-	return false
+	-- try to compact contents
+	for i=2,16 do
+		for j=16,3,-1 do
+			if turtle.getItemCount(j) > 0 then
+				t.select(j)
+				turtle.transferTo(i)
+			end
+		end
+	end
+	t.select(2)
 end
 
 function digLine(length, fillLeft, fillRight, fillUp, fillDown)
