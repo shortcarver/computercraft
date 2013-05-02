@@ -430,11 +430,11 @@ function _replace(fnCompare, fnDetect, fnDig, fnPlace, i)
 end
 
 function replace(i)
-	_replace(compare, detect, dig, turtle.place, i)
+	_replace(compare, detect, digAll, turtle.place, i)
 end	
 	
 function replaceUp(i)
-	_replace(compareUp, detectUp, digUp, turtle.placeUp, i)
+	_replace(compareUp, detectUp, digAllUp, turtle.placeUp, i)
 end	
 	
 function replaceDown(i)

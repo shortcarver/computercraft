@@ -2,7 +2,7 @@ local FUEL = 1
 local PLUG = 2
 local CHEST = 3
 local JUNKSTART = 4
-local JUNKEND = 6
+local JUNKEND = 5
 
 -- single turtle
 -- local SIDE_LENGTH_START = 1
@@ -244,7 +244,7 @@ end
 function dumpChest()
 	local map = {
 		32, 13, 64,  1,
-		 1,  1,  0,  0,
+		 1,  0,  0,  0,
 		 0,  0,  0,  0,
 		 0,  0,  0,  0
 	}
