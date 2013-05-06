@@ -1,12 +1,11 @@
 while true do
 	while turtle.suckUp() do
 		os.sleep(0.5)
-	end
-
-	for i=1,16,1 do
-		if turtle.getItemCount(i) > 0 then
-			turtle.select(i)
-			turtle.drop()
+		for i=1,16,1 do
+			if turtle.getItemCount(i) > 0 then
+				turtle.select(i)
+				turtle.drop()		
+			end
 		end
 	end
 

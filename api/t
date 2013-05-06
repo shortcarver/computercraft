@@ -8,6 +8,7 @@ local _callback = nil
 local _sel = 1
 local FALL_TIME = 0.1
 local SUCK_TIME = 0.1
+local _minLevel = 10
 
 function cb()
 	if _callback ~= nil then
@@ -173,74 +174,137 @@ end
 
 
 -- basic movement functions --
-function fuel()
-	if turtle.getFuelLevel() <= 10 then
+function setMinFuelLevel(level)
+	_minLevel = level
+end
+
+function fuel(force)
+	if force == nil then
+		force = false
+	end
+
+	if turtle.getFuelLevel() <= 10 or force then
 		select(1)
-		turtle.refuel(1)
-	end
-end
-
-function up()
-	fuel()
-	local flag = turtle.up()
-
-	if flag then _ty = _ty + 1 end
-	cb()
-	return flag
-end
-
-function forward()
-	fuel()
-	local flag = turtle.forward()
-
-	if flag then
-		if _th%2 == 0 then
-			_tz = _tz + (_th - 1)
-		else
-			_tx = _tx - (_th - 2)
+		while turtle.getItemCount(1) > 1 and turtle.getFuelLevel() < _minLevel do
+			turtle.refuel(1)
 		end
 	end
-	cb()
-	return flag
 end
 
-function back()
-	fuel()
+function up(count)
+	if count == nil then
+		count = 1
+	end
 
-	local flag = turtle.back()
+	for i=1, count do
+		fuel()
+		local flag = turtle.up()
 
-	if flag then
-		if _th%2 == 0 then
-			_tz = _tz - (_th - 1)
-		else
-			_tx = _tx + (_th - 2)
+		if flag then _ty = _ty + 1 end
+		cb()
+
+		if not flag then
+			return false
 		end
 	end
-	cb()
-	return flag
+
+	return true
 end
 
-function down()
-	fuel()
-	local flag = turtle.down()
-
-	if flag then
-		_ty = _ty - 1
+function forward(count)
+	if count == nil then
+		count = 1
 	end
-	cb()
-	return flag
+
+	for i=1,count do
+		fuel()
+		local flag = turtle.forward()
+
+		if flag then
+			if _th%2 == 0 then
+				_tz = _tz + (_th - 1)
+			else
+				_tx = _tx - (_th - 2)
+			end
+		end
+		cb()
+
+		if not flag then
+			return false
+		end
+	end
+	return true
 end
 
-function turnRight()
-	turtle.turnRight()
-	_th = (_th + 1) % 4
-	cb()
+function back(count)
+	if count == nil then
+		count = 1
+	end
+
+	for i=1,count do
+		fuel()
+
+		local flag = turtle.back()
+
+		if flag then
+			if _th%2 == 0 then
+				_tz = _tz - (_th - 1)
+			else
+				_tx = _tx + (_th - 2)
+			end
+		end
+		cb()
+
+		if not flag then
+			return false
+		end
+	end
+	return true
 end
 
-function turnLeft()
-	turtle.turnLeft()
-	_th = ((_th - 1) + 4) % 4
-	cb()
+function down(count)
+	if count == nil then
+		count = 1
+	end
+
+	for i=1,count do
+		fuel()
+		local flag = turtle.down()
+
+		if flag then
+			_ty = _ty - 1
+		end
+		cb()
+
+		if not flag then
+			return false
+		end
+	end
+	return true
+end
+
+function turnRight(count)
+	if count == nil then
+		count = 1
+	end
+
+	for i=1,count do
+		turtle.turnRight()
+		_th = (_th + 1) % 4
+		cb()
+	end
+end
+
+function turnLeft(count)
+	if count == nil then
+		count = 1
+	end
+
+	for i=1,count do
+		turtle.turnLeft()
+		_th = ((_th - 1) + 4) % 4
+		cb()
+	end
 end
 
 function turnHeading(t)
@@ -259,25 +323,30 @@ function turnHeading(t)
 	end
 end
 
+function setHeading(t)
+	return turnHeading(t)
+end
+
+
 -- movement shortcuts --
-function rt()
-	return turnRight()
+function rt(count)
+	return turnRight(count)
 end
 
-function lt()
-	return turnLeft()
+function lt(count)
+	return turnLeft(count)
 end
 
-function dn()
-	return down()
+function dn(count)
+	return down(count)
 end
 
-function fd()
-	return forward()
+function fd(count)
+	return forward(count)
 end
 
-function bk()
-	return back()
+function bk(count)
+	return back(count)
 end
 
 -- dig wrappers --
@@ -345,6 +414,28 @@ function isInventoryFull()
 	return true
 end
 
+function compactInventory(s,f)
+	if s == nil then
+		s = 1
+	end
+	if f == nil then
+		f = 16
+	end
+
+	local sel = _sel
+
+	-- try to compact contents
+	for i=s,15 do
+		for j=f,i+1,-1 do
+			if turtle.getItemCount(j) > 0 then
+				select(j)
+				turtle.transferTo(i)
+			end
+		end
+	end
+
+	select(sel)
+end
 
 
 -- advanced movement -- 
@@ -440,6 +531,8 @@ end
 function replaceDown(i)
 	_replace(compareDown, detectDown, digDown, turtle.placeDown, i)
 end	
+
+
 
 -- coordinate based movement --
 

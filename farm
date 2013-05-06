@@ -1,0 +1,147 @@
+
+function gotoTree()
+	t.fd()
+	t.fd()
+	t.fd()
+end
+
+function detectTree()
+	return t.compare(1)
+end
+
+function detectSappling()
+	return t.compareDown(2)
+end
+
+function log()
+	t.select(1)
+	t.dig()
+	t.fd()
+	t.digDown()
+
+	local h = 0
+	while turtle.compareUp(1) do
+		turtle.digUp()
+		t.up()
+		h = h + 1
+	end
+
+	for i=1,h do
+		t.dn()
+	end
+  
+end
+
+
+function empty()
+	local map = {
+		1, 64, 0,  0,
+		 0,  0,  0,  0,
+		 0,  0,  0,  0,
+		 0,  0,  0,  0
+	}
+
+	for i=1,16 do
+		if turtle.getItemCount(i) > map[i] then
+			t.select(i)
+			turtle.dropDown(turtle.getItemCount(i) - map[i])
+		end
+	end
+end
+
+function handlePlot()
+	if detectTree() then
+		log()
+	else
+		t.fd()
+	end
+
+	if not detectSappling() and turtle.getItemCount(2) > 1 then
+		t.placeDown(2)
+	end
+end
+
+t.setLoc(0,0,0,0)
+
+t.setMinFuelLevel(500)
+
+-- first line
+for i=1,5 do
+	t.fd(3)
+	handlePlot()
+end
+
+t.rt()
+
+for i=1,4 do
+	t.fd(3)
+	handlePlot()
+end
+
+t.rt()
+
+for i=1,4 do
+	t.fd(3)
+	handlePlot()
+end
+
+t.rt()
+t.fd(3)
+handlePlot()
+t.rt()
+
+for i=1,3 do
+	t.fd(3)
+	handlePlot()
+end
+
+t.lt()
+
+for i=1,2 do
+	t.fd(3)
+	handlePlot()
+end
+
+for i=1,2 do
+	t.lt()
+	t.fd(3)
+	handlePlot()
+end
+
+for i=1,2 do
+	t.rt()
+	t.fd(3)
+	handlePlot()
+end
+
+for i=1,2 do
+	t.lt()
+	t.fd(3)
+	handlePlot()
+end
+
+-- go to the sappling container
+t.rt()
+t.fd(4)
+t.rt()
+t.fd(2)
+t.dn(4)
+t.select(2)
+turtle.suckDown()
+
+-- drop the extras
+for i=3,16 do
+	t.select(2)
+	if turtle.compareTo(i) then
+		t.select(i)
+		turtle.dropDown()
+	end
+end
+
+t.goto(0,0,0)
+t.setHeading(0)
+t.compactInventory()
+t.fuel(true)
+empty()    
+
+
