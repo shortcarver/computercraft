@@ -127,7 +127,9 @@ t.rt()
 t.fd(2)
 t.dn(4)
 t.select(2)
-turtle.suckDown()
+while turtle.suckDown() do
+	os.sleep(1)
+end
 
 -- drop the extras
 for i=3,16 do

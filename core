@@ -243,7 +243,7 @@ end
 
 function dumpChest()
 	local map = {
-		32, 13, 64,  1,
+		32, 13, 32,  1,
 		 1,  0,  0,  0,
 		 0,  0,  0,  0,
 		 0,  0,  0,  0
@@ -358,6 +358,28 @@ end
 -- start program --
 
 local args = { ... }
+
+if #args == 0 then
+	print("---core---")
+	print("The automated mining script")
+	print("Fill the slots with the items below")
+	print(" slot-item(amount)")
+	print(" 1-coal(32)")
+	print(" 2-cobble(13)")
+	print(" 3-chest(32)")
+	print(" 4-stone(1)")
+	print(" 5-dirt(1)")
+	print("")
+	print("commands")
+	print("core mine")
+	print("core start")
+	print("core next")
+	print("core continue")
+	print("core skip")
+
+	error()
+end
+
 
 local command = args[1]
 
