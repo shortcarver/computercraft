@@ -9,6 +9,7 @@ local _sel = 1
 local FALL_TIME = 0.1
 local SUCK_TIME = 0.1
 local _minLevel = 10
+local ATTACK_TIME = 0.5
 
 function cb()
 	if _callback ~= nil then
@@ -414,6 +415,23 @@ function isInventoryFull()
 	return true
 end
 
+function countInventory(s,f)
+	if s == nil then
+		s = 1
+	end
+	if f == nil then
+		f = 16
+	end
+
+	local count = 0
+
+	for i=s,f do
+		count = count + turtle.getItemCount(i)
+	end
+
+	return count
+end
+
 function compactInventory(s,f)
 	if s == nil then
 		s = 1
@@ -460,33 +478,47 @@ function forwardAttack()
 end
 
 -- move, dig/attack --
-function _mvDigAttack(fnMv, fnDetect, fnDig, fnAttack)
-	while not fnMv() do
-		-- if block, then dig
-		if fnDetect() then
-			fnDig()
-			os.sleep(FALL_TIME)
-		else
-			-- this is a mob, attack until nothing to attack
-			while fnAttack() do end
+function _mvDigAttack(fnMv, fnDetect, fnDig, fnAttack, count)
+	if count == nil then
+		count = 1
+	end
+	for i=1,count do
+		while not fnMv() do
+			-- if block, then dig
+			if fnDetect() then
+				fnDig()
+				os.sleep(FALL_TIME)
+			else
+				-- this is a mob, attack until nothing to attack
+				while fnAttack() do 
+					os.sleep(ATTACK_TIME)
+				end
+			end
 		end
 	end
 
 	return true;
 end
 
-function upDigAttack()
-	_mvDigAttack(up, detectUp, turtle.digUp, turtle.attackUp)
+function upDigAttack(count)
+	_mvDigAttack(up, detectUp, turtle.digUp, turtle.attackUp,count)
 end
 
-function forwardDigAttack()
-	_mvDigAttack(forward, detect, turtle.dig, turtle.attack)
+function forwardDigAttack(count)
+	_mvDigAttack(forward, detect, turtle.dig, turtle.attack,count)
 end
 
-function downDigAttack()
-	_mvDigAttack(down, detectDown, digDown, turtle.attackDown)
+function downDigAttack(count)
+	_mvDigAttack(down, detectDown, digDown, turtle.attackDown,count)
 end
 
+function fdDigAttack(count)
+	_mvDigAttack(forward, detect, turtle.dig, turtle.attack,count)
+end
+
+function dnDigAttack(count)
+	_mvDigAttack(down, detectDown, digDown, turtle.attackDown,count)
+end
 
 -- move/dig --
 function _mvDig(fnDetect, fnDig, fnMove)

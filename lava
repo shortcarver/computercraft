@@ -1,0 +1,35 @@
+function checkFill()
+  for i=3,16 do
+    if turtle.getItemCount(i) > 0 then
+      return true
+    end
+  end
+  return false
+end
+
+function checkWalls()
+  for i=1,4 do
+    turtle.place()
+    turtle.turnRight()
+  end
+end
+
+local depth = 0
+
+while not turtle.detectDown() do
+  t.downAttack()
+  depth = depth + 1
+end
+
+while not checkFill() do
+  turtle.select(2)
+  turtle.placeDown()
+  checkWalls()
+  t.upAttack()
+  depth = depth - 1
+end
+
+for i=1,depth do
+  t.upAttack()
+end
+

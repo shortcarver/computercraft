@@ -1,10 +1,4 @@
 
-function gotoTree()
-	t.fd()
-	t.fd()
-	t.fd()
-end
-
 function detectTree()
 	return t.compare(1)
 end
@@ -16,18 +10,17 @@ end
 function log()
 	t.select(1)
 	t.dig()
-	t.fd()
+	t.forwardDigAttack()
 	t.digDown()
 
 	local h = 0
 	while turtle.compareUp(1) do
-		turtle.digUp()
-		t.up()
+		t.upDigAttack()
 		h = h + 1
 	end
 
 	for i=1,h do
-		t.dn()
+		t.downDigAttack()
 	end
   
 end
@@ -53,7 +46,7 @@ function handlePlot()
 	if detectTree() then
 		log()
 	else
-		t.fd()
+		t.forwardDigAttack()
 	end
 
 	if not detectSappling() and turtle.getItemCount(2) > 1 then
@@ -67,69 +60,71 @@ t.setMinFuelLevel(500)
 
 -- first line
 for i=1,5 do
-	t.fd(3)
+	t.forwardDigAttack(3)
 	handlePlot()
 end
 
 t.rt()
 
 for i=1,4 do
-	t.fd(3)
+	t.forwardDigAttack(3)
 	handlePlot()
 end
 
 t.rt()
 
 for i=1,4 do
-	t.fd(3)
+	t.forwardDigAttack(3)
 	handlePlot()
 end
 
 t.rt()
-t.fd(3)
+t.forwardDigAttack(3)
 handlePlot()
 t.rt()
 
 for i=1,3 do
-	t.fd(3)
+	t.forwardDigAttack(3)
 	handlePlot()
 end
 
 t.lt()
 
 for i=1,2 do
-	t.fd(3)
+	t.forwardDigAttack(3)
 	handlePlot()
 end
 
 for i=1,2 do
 	t.lt()
-	t.fd(3)
+	t.forwardDigAttack(3)
 	handlePlot()
 end
 
 for i=1,2 do
 	t.rt()
-	t.fd(3)
+	t.forwardDigAttack(3)
 	handlePlot()
 end
 
 for i=1,2 do
 	t.lt()
-	t.fd(3)
+	t.forwardDigAttack(3)
 	handlePlot()
 end
 
 -- go to the sappling container
 t.rt()
-t.fd(4)
+t.forwardDigAttack(3)
 t.rt()
-t.fd(2)
-t.dn(4)
+t.forwardDigAttack(2)
+t.downDigAttack(4)
 t.select(2)
 while turtle.suckDown() do
 	os.sleep(1)
 end
+
+t.compactInventory()
 
 -- drop the extras
 for i=3,16 do

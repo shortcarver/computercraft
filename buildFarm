@@ -1,0 +1,47 @@
+
+function makePlot()
+  t.placeDown(3)
+  t.bk()
+  t.placeDown(2)
+  t.fd()
+  t.lt()
+  t.fd()
+  t.placeDown(2)
+  t.bk()
+  t.bk()
+  t.placeDown(2)
+  t.fd()
+  t.rt()
+  t.fd()
+  t.placeDown(2)
+  t.bk()
+  t.compactInventory()
+end
+
+for j=1,5 do
+  for i=1,4 do
+    makePlot()
+    t.fd()
+    t.fd()
+    t.fd()
+    t.fd()
+  end
+  
+  makePlot()
+  
+  if j % 2 == 1 then
+    t.rt()
+    t.fd()
+    t.fd()
+    t.fd()
+    t.fd()
+    t.rt()
+  elseif j % 2 == 0 then
+    t.lt()
+    t.fd()
+    t.fd()
+    t.fd()
+    t.fd()
+    t.lt()
+  end
+end
