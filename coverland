@@ -1,0 +1,155 @@
+local SIDE_LENGTH_START = 1
+local SIDE_COUNT_LIMIT = 2
+local SIDE_LENGTH_INCREMENT = 1
+
+function findMats()
+	for i=2,16 do
+		if turtle.getItemCount(i) > 0 then
+			t.select(i)
+			return true
+		end
+	end
+	return false
+end
+
+function set(moves, sideMoves, sideLength, sideCount)
+	local f,err = fs.open("/coverland.conf", "w")
+	f.write(textutils.serialize({
+		moves=moves,
+		sideMoves=sideMoves,
+		sideLength=sideLength,
+		sideCount=sideCount}))
+	f.flush()
+	f.close()
+end
+
+function get()
+	if not fs.exists("/coverland.conf") then
+		return nil
+	end
+
+	local f, err = fs.open("/coverland.conf", "r")
+
+	local data = f.readLine()
+
+	f.close()
+
+	return textutils.unserialize(data)
+end
+
+function skip()
+	local data = get()
+	local moves = data.moves
+	local sideMoves = data.sideMoves
+	local sideLength = data.sideLength
+	local sideCount = data.sideCount
+
+	t.fdDigAttack()
+
+	sideMoves = sideMoves + 1
+
+	if sideMoves >= sideLength then
+		t.lt()
+		sideCount = sideCount + 1
+		sideMoves = 0
+	end
+
+	moves = moves + 1
+
+	if sideCount >= SIDE_COUNT_LIMIT then
+		sideLength = sideLength + SIDE_LENGTH_INCREMENT
+		sideCount = 0
+	end
+
+	set(moves,sideMoves,sideLength,sideCount)
+
+	return moves % 2 == 1
+end
+
+function continue()
+	local data = get()
+	local moves = data.moves
+	local sideMoves = data.sideMoves
+	local sideLength = data.sideLength
+	local sideCount = data.sideCount
+
+	t.replaceDown()
+	t.fdDigAttack()
+
+	sideMoves = sideMoves + 1
+
+	if sideMoves >= sideLength then
+		t.lt()
+		sideCount = sideCount + 1
+		sideMoves = 0
+	end
+
+	moves = moves + 1
+
+	if sideCount >= SIDE_COUNT_LIMIT then
+		sideLength = sideLength + SIDE_LENGTH_INCREMENT
+		sideCount = 0
+	end
+
+	set(moves,sideMoves,sideLength,sideCount)
+
+	return moves % 2 == 1
+end
+
+local args = { ... }
+
+local command = args[1]
+
+if command == "mine" then
+	mine()
+elseif command == "next" then
+	next()
+elseif command == "start" then
+	set(0,0,SIDE_LENGTH_START,0)
+elseif command == "continue" then
+	local val = args[2]
+
+	if val == "side" then
+		data = get()
+		val = data.sideLength - data.sideMoves
+	else
+		val = tonumber(val)
+	end
+
+	if val == nil then
+		val = 1
+	end
+
+	for i=1,val do
+		if findMats() then
+			continue()
+		else
+			break
+		end
+	end
+
+	t.compactInventory()
+elseif command == "skip" then
+	local val = args[2]
+
+	if val == "side" then
+		data = get()
+		val = data.sideLength - data.sideMoves
+	else
+		val = tonumber(val)
+	end
+
+	if val == nil then
+		val = 1
+	end
+
+	for i=1,val do
+		if findMats() then
+			skip()
+		else
+			break
+		end
+	end
+end
+
+

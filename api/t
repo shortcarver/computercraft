@@ -462,6 +462,7 @@ end
 function _mvAttack(mvfn, dfn, atckfn)
 	while not mvfn() and not dfn() do
 		atckfn()
+		os.sleep(ATTACK_TIME)
 	end
 end
 
@@ -474,6 +475,14 @@ function downAttack()
 end
 
 function forwardAttack()
+	_mvAttack(forward, detect, turtle.attack)
+end
+
+function dnAttack()
+	_mvAttack(down, detectDown, turtle.attackDown)
+end
+
+function fdAttack()
 	_mvAttack(forward, detect, turtle.attack)
 end
 

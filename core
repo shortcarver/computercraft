@@ -390,23 +390,43 @@ elseif command == "next" then
 elseif command == "start" then
 	set(0,0,SIDE_LENGTH_START,0)
 elseif command == "continue" then
-	local c = 1
-	if args[2] ~= nil then
-		c = tonumber(args[2])
+	local val = args[2]
+
+	if val == "side" then
+		data = get()
+		val = (data.sideLength - data.sideMoves + 1)/2
+	else
+		val = tonumber(val)
 	end
 
-	for i=1,c do
+	if val == nil then
+		val = 1
+	end
+
+	if val > 10 then
+		val = 10
+	end
+
+	for i=1,val do
 		if continue() then
 			continue()
 		end
 	end
 elseif command == "skip" then
-	local c = 1
-	if args[2] ~= nil then
-		c = tonumber(args[2])
+	local val = args[2]
+
+	if val == "side" then
+		data = get()
+		val = (data.sideLength - data.sideMoves + 1)/2
+	else
+		val = tonumber(val)
 	end
 
-	for i=1,c do
+	if val == nil then
+		val = 1
+	end
+
+	for i=1,val do
 		if skip() then
 			skip()
 		end
