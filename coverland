@@ -143,6 +143,10 @@ elseif command == "skip" then
 		val = 1
 	end
 
+	if val < 1 then
+		val = 1
+	end
+
 	for i=1,val do
 		if findMats() then
 			skip()
