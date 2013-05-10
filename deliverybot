@@ -1,3 +1,6 @@
+-- delivery bot server, uses GPS and wireless!
+-- will serve items from the chest in front of it to the rest of the network
+
 local DELIVERY_NETWORK = 2000
 
 -- startup stuff

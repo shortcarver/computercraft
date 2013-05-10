@@ -1,3 +1,5 @@
+-- simple test of the waitForAny() function
+
 function timer()
 	local timeout = os.startTimer(5)
 

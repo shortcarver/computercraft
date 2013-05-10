@@ -1,3 +1,5 @@
+-- loads the apis into each computer as it boots
+
 local files = fs.list("/rom/mc/api")
 
 for n, f in ipairs(files) do

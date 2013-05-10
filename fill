@@ -1,3 +1,9 @@
+-- this is used to fill the ground with materials.
+-- usefull for preventing mobs from spawning below you, and near your mob farms
+-- slot 1 = fuel
+-- slot 2 = plug (block to be placed at the top of the hole)
+-- slot 3-16 = fill materials. I usually use cobble
+
 function countMats()
 	local count = 0
 	for i=3,16 do

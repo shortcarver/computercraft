@@ -1,3 +1,7 @@
+-- automated furnace
+-- place under furnace with chest in front
+-- will suck out finished product and place in chest
+
 while true do
 	turtle.suckUp()
 	local count = turtle.getItemCount(1)

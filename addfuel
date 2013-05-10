@@ -1,3 +1,6 @@
+-- used to keep a furnace full of fuel
+-- place a chest below with fuel in it, and a furnace in front
+
 while true do
 	turtle.suckDown()
 	local count = turtle.getItemCount(1)

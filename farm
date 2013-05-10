@@ -1,3 +1,5 @@
+-- a lumberjack script that manages a tree farm
+
 
 function detectTree()
 	return t.compare(1)

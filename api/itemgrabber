@@ -1,3 +1,6 @@
+-- depriciated
+-- uses wireless to find an item on the network and request its delivery
+
 function get(itemName, slot)
 	-- store old position
 	print("Store position")

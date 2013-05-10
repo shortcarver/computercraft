@@ -32,17 +32,17 @@ function isValuable()
 end
 
 function placeJunkUp()
-	if turtle.getItemCount(2) > 16 then
+	if t.getItemCount(2) > 16 then
 		t.placeUp(2)
-	else if turtle.getItemCount(5) > 1 then
+	else if t.getItemCount(5) > 1 then
 		t.placeUp(5)
 	end
 end
 
 function placeJunkDn()
-	if turtle.getItemCount(2) > 16 then
+	if t.getItemCount(2) > 16 then
 		t.placeDown(2)
-	else if turtle.getItemCount(5) > 1 then
+	else if t.getItemCount(5) > 1 then
 		t.placeDown(5)
 	end
 end
@@ -97,7 +97,7 @@ function checkWalls()
 			t.select(1)
 			t.digAll()
 		end
-		t.turnRight()
+		t.rt()
 	end
 	if isValuable() then
 		if isChest() then
@@ -114,7 +114,7 @@ function drillDown(dp)
 	end
 	while not t.detectDown() do
 		checkWalls()
-		t.downAttack()
+		t.downDigAttack()
 		placeJunkUp()
 		if t.detectDown() then
 			digDown()
@@ -131,7 +131,7 @@ function drillUp(dp)
 			digUp()
 			os.sleep(0.5)
 		end
-		t.upAttack()
+		t.upDigAttack()
 		placeJunkDn()
 		dp = dp - 1
 	end
@@ -170,11 +170,10 @@ function mine()
 
 	-- go to next position
 	t.select(1)
-	t.forwardDigAttack()
-	t.forwardDigAttack()
-	t.turnLeft()
-	t.forwardDigAttack()
-	t.turnRight()
+	t.fdDigAttack(2)
+	t.lt()
+	t.fdDigAttack()
+	t.rt()
 
 	t.digDown()
 	while not t.detectDown() do
@@ -201,27 +200,26 @@ function mine()
 	t.select(1)
 	t.digAllUp()
 	t.placeDown(2)
-	t.turnRight()
-	t.forwardDigAttack()
-	t.digAllUp()
-	t.placeDown(2)
-	t.turnRight()
-	t.forwardDigAttack()
-	t.digAllUp()
-	t.placeDown(2)
-	t.forwardDigAttack()
-	t.digAllUp()
-	t.placeDown(2)
-	t.turnRight()
 
-	t.forwardDigAttack()
+	for i=1,2 do
+		t.rt()
+		t.fdDigAttack()
+		t.digAllUp()
+		t.placeDown(2)
+	end
+
+	t.fdDigAttack()
 	t.digAllUp()
 	t.placeDown(2)
-	t.turnRight()
-	t.forwardDigAttack()
-	t.digAllUp()
-	t.placeDown(2)
-	t.forwardDigAttack()
+
+	for i=1,2 do
+		t.rt()
+		t.fdDigAttack()
+		t.digAllUp()
+		t.placeDown(2)
+	end
+
+	t.fdDigAttack()
 	t.digAllUp()
 	t.placeDown(2)
 end
@@ -232,27 +230,21 @@ function next()
 	t.digAllUp()
 	t.placeDown(2)
 	t.lt()
-	t.forwardDigAttack()
+	t.fdDigAttack()
 
-	t.digAllUp()
-	t.placeDown(2)
-	t.rt()
-	t.forwardDigAttack()
+	for i=1,2 do
+		t.digAllUp()
+		t.placeDown(2)
+		t.rt()
+		t.fdDigAttack()
+	end
 
-	t.digAllUp()
-	t.placeDown(2)
-	t.rt()
-	t.forwardDigAttack()
-
-	t.digAllUp()
-	t.placeDown(2)
-	t.lt()
-	t.forwardDigAttack()
-
-	t.digAllUp()
-	t.placeDown(2)
-	t.lt()
-	t.forwardDigAttack()
+	for i=1,2 do
+		t.digAllUp()
+		t.placeDown(2)
+		t.lt()
+		t.fdDigAttack()
+	end
 
 	t.digAllUp()
 	t.placeDown(2)
@@ -267,19 +259,17 @@ function dumpChest()
 		 0,  0,  0,  0
 	}
 
-	t.rt()
-	t.rt()
+	t.rt(2)
 
 	t.place(3)
 	for i=1,16 do
-		if turtle.getItemCount(i) > map[i] then
+		if t.getItemCount(i) > map[i] then
 			t.select(i)
-			turtle.drop(turtle.getItemCount(i) - map[i])
+			t.drop(t.getItemCount(i) - map[i])
 		end
 	end
 
-	t.rt()
-	t.rt()
+	t.rt(2)
 end
 
 function set(moves, sideMoves, sideLength, sideCount)
@@ -388,12 +378,15 @@ if #args == 0 then
 	print(" 4-stone(1)")
 	print(" 5-dirt(1)")
 	print("")
-	print("commands")
-	print("core mine")
+	print("Usage:")
+	print(" core mine")
+	print("--does a single mining pass")
 	print("core start")
+	print("--restarts the mining parameters")
 	print("core next")
-	print("core continue")
-	print("core skip")
+	print("--moves the turtle to the next position")
+	print("core continue [\"side\"/1,2,3...]")
+	print("core skip [\"side\"/1,2,3...]")
 
 	error()
 end

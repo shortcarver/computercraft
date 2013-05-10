@@ -136,20 +136,16 @@ for y=1,height do
 
 		if x % 2 == 1 then
 			if bBack then
-				t.rt()
-				t.rt()
+				t.rt(2)
 				t.replace()
-				t.rt()
-				t.rt()
+				t.rt(2)
 			end
 			digLine(depth,fillLeft,fillRight,fillUp,fillDown)
 		else
 			if bFront then
-				t.rt()
-				t.rt()
+				t.rt(2)
 				t.replace()
-				t.rt()
-				t.rt()
+				t.rt(2)
 			end
 			digLine(depth,fillRight,fillLeft,fillUp,fillDown)
 		end

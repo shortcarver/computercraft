@@ -1,3 +1,11 @@
+-- builds a mineshaft
+-- slot 1 = fuel
+-- slot 2 = ladders
+-- slot 3 = torches
+-- slot 4-16 = build materials
+-- when will dig down and place ladders and torches as it goes
+-- will also repair walls/floors so that you can build through lava/lakes etc
+
 local args = { ... }
 
 local depth = tonumber(args[1])

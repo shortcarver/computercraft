@@ -1,3 +1,6 @@
+-- this script is broken!
+-- tries to use an A* type algorithm for cleaning up leaves left by chopped trees
+
 
 local scannedLocations = {}
 local newLocations = pq.create(false)

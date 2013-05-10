@@ -1,6 +1,13 @@
-
+-- a sorting program
+-- slot 1 = fuel
+-- slot 2 = empty
+-- slot 3 - 16 = mats to sort into chests
+-- this will suck a stack of items from a chest in front, and if it matches
+-- an item in 2-16 it will place it in a chest on the left or right side of it
+-- (chests should be 7 tall on each side)
+-- if the stack doesn't match, or the chest for it is full, it will drop the stack
+-- behind it
 	
-
 while true do
 	turtle.select(2)
 

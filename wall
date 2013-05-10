@@ -1,3 +1,12 @@
+-- builds a wall
+-- slot 1 = fuel
+-- slot 2 = torches
+-- slot 3+ = build materials
+-- builds a wall height blocks tall from the starting point
+-- will fill holes, and account for hills
+-- places a torch every 5 blocks on the top of the wall
+
+
 -- scans inventory for building materials
 function findMats()
 	for i=3,16 do

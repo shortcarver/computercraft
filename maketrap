@@ -1,3 +1,6 @@
+-- incomplete!
+-- will build a piston based mob-farm-funnel
+
 function doRefuel()
 	while turtle.getFuelLevel() < 500 do
 		turtle.select(1)

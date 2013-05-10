@@ -1,4 +1,5 @@
 -- turtle short cuts. mainly handles things like fuel, and special digging
+-- provides most of the turtle api + some more features
 
 local _th = 0
 local _tx = 0
@@ -80,6 +81,10 @@ function getLocLt()
 end
 
 -- utilities --
+function getItemCount(i)
+	return turtle.getItemCount(i)
+end
+
 function select(i)
 	if i == nil then
 		return
@@ -173,6 +178,21 @@ function attackDown()
 	return turtle.attackDown()
 end
 
+function drop(i)
+	return turtle.drop(i)
+end
+
+function dropUp(i)
+	return turtle.dropUp(i)
+end
+
+function dropDown(i)
+	return turtle.dropDown(i)
+end
+
+function dropDn(i)
+	return turtle.dropDown(i)
+end
 
 -- basic movement functions --
 function setMinFuelLevel(level)

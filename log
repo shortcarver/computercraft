@@ -1,3 +1,5 @@
+-- cuts down a tree
+-- fuel in slot 1
 
 turtle.select(2)
 turtle.dig()

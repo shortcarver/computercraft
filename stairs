@@ -1,3 +1,7 @@
+-- creates a simple set of stairs
+-- slot 1 = fuel
+-- slot 2 = blocks
+
 local args = { ... }
 
 if #args < 1 then

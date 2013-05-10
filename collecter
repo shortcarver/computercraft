@@ -1,3 +1,6 @@
+-- simple script that gathers items from above, and places them into a chest
+-- in front
+
 while true do
 	while turtle.suckUp() do
 		os.sleep(0.5)

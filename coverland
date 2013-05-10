@@ -1,3 +1,7 @@
+-- covers the land in build materials from slots 2 - 16
+-- slot 1 is fuel
+-- great for placing half-slabs!
+
 local SIDE_LENGTH_START = 1
 local SIDE_COUNT_LIMIT = 2
 local SIDE_LENGTH_INCREMENT = 1

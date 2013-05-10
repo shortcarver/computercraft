@@ -1,3 +1,5 @@
+-- will chop down a jungle tree (minus branches)
+-- put coal in first slot, and place turtle on the right side base of the tree
 
 turtle.dig()
 t.forward()

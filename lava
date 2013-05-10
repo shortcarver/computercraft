@@ -1,3 +1,6 @@
+-- place fuel in slot 1, empty buckets in slot 2
+-- will travel down and fill buckets with whatever liquid it finds
+
 function checkFill()
   for i=3,16 do
     if turtle.getItemCount(i) > 0 then

@@ -1,3 +1,5 @@
+-- sucks up items from in front and places them in a chest above
+
 while true do
 	if turtle.suck() then
 		turtle.dropUp()

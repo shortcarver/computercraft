@@ -1,3 +1,7 @@
+-- place next to two cobble generators.
+-- One below, and one in front, place a chest above.
+-- Will dig the cobble out, and place in chest until inventory and chest are full
+
 while true do
 	local count = 0
 	for i=1,16,1 do

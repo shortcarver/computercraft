@@ -1,3 +1,5 @@
+-- some simple helper tools for configuring and communicating with wireless modems
+
 function configureModem(networkId)
 	local modem = nil
 	local modem_side = nil

@@ -1,3 +1,6 @@
+-- this is a simple API that can be called to query items from the 
+-- deliverybot network
+
 local DELIVERY_NETWORK = 2000
 
 function find(itemName)

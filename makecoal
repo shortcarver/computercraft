@@ -1,3 +1,7 @@
+-- automated furnace
+-- place above furnace with chest in front
+-- will suck items from chest and place them in the top slot of the furnace
+
 turtle.select(1)
 while true do
 	turtle.suck()

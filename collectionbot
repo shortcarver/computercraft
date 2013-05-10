@@ -1,4 +1,5 @@
 -- pulls stuff from the chest it is next to, and deposits it in the pool
+-- uses GPS, and deliverybot!
 
 while true do
 	refuel.run(1000)

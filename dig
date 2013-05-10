@@ -1,3 +1,5 @@
+-- simple dig command
+
 -- startup stuff
 local args = { ... }
 

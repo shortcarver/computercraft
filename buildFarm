@@ -1,3 +1,7 @@
+-- builds the platforms for a tree farm
+-- place fuel in slot 1
+-- place torches in slot 2
+-- place dirt in slot 3
 
 function makePlot()
   t.placeDown(3)

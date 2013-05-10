@@ -1,3 +1,7 @@
+-- depriciated code used to find items in a wireless network
+-- see deliverybot api
+
+
 local REQUEST_CHANNEL = 1000
 
 

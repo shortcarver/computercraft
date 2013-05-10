@@ -1,3 +1,6 @@
+-- crafts items
+-- very incomplete!
+
 function move(s,c,d)
 	turtle.select(s)
 	turtle.dropDown(c)

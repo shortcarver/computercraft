@@ -1,8 +1,7 @@
 -- pulls stuff from the chest pointed to it by coordinates, and deposits it in the pool
+-- incomplete!
+
 local NETWORKID = 3000
-
-
-
 
 while true do
 	refuel.run(1000)

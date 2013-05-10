@@ -1,4 +1,4 @@
-
+-- similar to excavate, but not as good
 
 function checkSupplies()
 	refuel.run(1000)

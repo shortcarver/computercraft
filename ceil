@@ -1,3 +1,8 @@
+-- quick and dirty script to build a cieling over a room
+-- does so by turning when it hits a wall. If no walls, will go forever
+-- slot 1 = fuel
+-- slot 2 = build material
+
 
 function placeUpRow()
 	turtle.replaceUp(2)

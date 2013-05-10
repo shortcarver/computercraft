@@ -1,3 +1,5 @@
+-- naviagtion tools, relies on having a GPS network setup
+
 local heading = -1
 
 -- calculate the heading

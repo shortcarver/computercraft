@@ -1,3 +1,5 @@
+-- given a pair of x,y coordinates, this will generate the nearest mining location
+
 local _lt = {4,0,1,3,2,3,2,4,0,1,0,1,3,2,4,2,4,0,1,3,1,3,2,4,0}
 -- represents the matrix
 --[[

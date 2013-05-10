@@ -1,3 +1,7 @@
+-- a simple set of commands to record, and read a turtle's home location
+-- usefull for telling a bot to go back to its starting point after a chunk
+-- reload or some other failure
+
 function set()
 	local x,y,z = navi.locate()
 

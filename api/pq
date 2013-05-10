@@ -1,3 +1,6 @@
+-- an implementation of a max/min priority queue in lua
+-- usefull for navigation algorithms!
+
 function create(max)
 	local q = {}
 

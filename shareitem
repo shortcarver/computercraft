@@ -1,3 +1,7 @@
+-- depricated, see deliverybot
+-- shares items from the chest in front of it to other bots on the network
+-- uses GPS and wireless modems!
+
 local REQUEST_CHANNEL = 1000
 
 local function printUsage()

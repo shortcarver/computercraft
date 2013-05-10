@@ -1,3 +1,7 @@
+-- depricated, see farm
+-- a simple lumberjack script
+
+
 function toTree()
 	turtle.up()
 	turtle.up()
