@@ -31,7 +31,7 @@ function isValuable()
 	return true
 end
 
-function dropCobbleUp()
+function placeJunkUp()
 	if turtle.getItemCount(2) > 16 then
 		t.placeUp(2)
 	else if turtle.getItemCount(5) > 1 then
@@ -39,7 +39,7 @@ function dropCobbleUp()
 	end
 end
 
-function dropCobbleDn()
+function placeJunkDn()
 	if turtle.getItemCount(2) > 16 then
 		t.placeDown(2)
 	else if turtle.getItemCount(5) > 1 then
@@ -115,7 +115,7 @@ function drillDown(dp)
 	while not t.detectDown() do
 		checkWalls()
 		t.downAttack()
-		dropCobbleUp()
+		placeJunkUp()
 		if t.detectDown() then
 			digDown()
 		end
@@ -132,7 +132,7 @@ function drillUp(dp)
 			os.sleep(0.5)
 		end
 		t.upAttack()
-		dropCobbleDn()
+		placeJunkDn()
 		dp = dp - 1
 	end
 
