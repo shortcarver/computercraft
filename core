@@ -31,19 +31,21 @@ function isValuable()
 	return true
 end
 
+
+-- place dirt first since we use cobble for surface stuff
 function placeJunkUp()
-	if t.getItemCount(2) > 16 then
-		t.placeUp(2)
-	else if t.getItemCount(5) > 1 then
+	if t.getItemCount(5) > 1 then
 		t.placeUp(5)
+	elseif t.getItemCount(2) > 16 then
+		t.placeUp(2)
 	end
 end
 
 function placeJunkDn()
-	if t.getItemCount(2) > 16 then
-		t.placeDown(2)
-	else if t.getItemCount(5) > 1 then
+	if t.getItemCount(5) > 1 then
 		t.placeDown(5)
+	elseif t.getItemCount(2) > 16 then
+		t.placeDown(2)
 	end
 end
 
@@ -442,6 +444,8 @@ elseif command == "skip" then
 			skip()
 		end
 	end
+else
+	print("Wha?")
 end
 
 

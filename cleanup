@@ -1,16 +1,29 @@
--- this script is broken!
--- tries to use an A* type algorithm for cleaning up leaves left by chopped trees
+-- Will clean up floating blocks and then return to start
+-- slot 1 = fuel
+-- slot 2+ = empty
 
 
+local maxY = 0
+local minY = 0
 local scannedLocations = {}
 local newLocations = pq.create(false)
 
-function hashLoc(x,y,z)
-	return (y + 500)..","..(x + 500)..","..(z + 500)
+function hashLoc(x,z)
+	return (x + 500)..","..(z + 500)
 end
 
-function pushLoc(x,y,z)
-	local lstr = hashLoc(x,y,z)
+function isHandled(x,z)
+	local hash = hashLoc(x,z)
+	if scannedLocations[hash] then
+		return true
+	end
+
+	return pq.containsKey(newLocations, hash)
+end
+
+function pushLoc(x,z)
+	local lstr = hashLoc(x,z)
+
 	if scannedLocations[lstr] then
 		return
 	end
@@ -19,51 +32,118 @@ function pushLoc(x,y,z)
 		return
 	end
 
-	pq.put(newLocations, {x=x,y=y,z=z}, lstr)
+	pq.put(newLocations, {x=x,z=z}, lstr)
 end
 
 function popLoc()
 	if pq.size(newLocations) > 0 then
 		local ret = pq.pop(newLocations)
 
-		return ret.x, ret.y, ret.z
+		return ret.x, ret.z
 	end
 	return nil
 end
 
-function scan()
-	local h,x,y,z = t.getLoc()
+function getScanList()
+	local scan = {false, false, false, false}
 
-	if turtle.detectUp() then
-		turtle.digUp()
-		x,y,z = t.getLocUp()
-		pushLoc(x,y,z)
-	end
+	for i=1,4 do
+		t.setHeading(i-1)
+		local x,y,z = t.getLocFd()
 
-	if turtle.detectDown() then
-		turtle.digDown()
-		x,y,z = t.getLocDn()
-		pushLoc(x,y,z)
-	end
-
-	for i=1,3 do
-		if turtle.detect() then
-			turtle.dig()
-			x,y,z = t.getLocFd()
-			pushLoc(x,y,z)
+		if isHandled(x,z) then
+			scan[i] = true
 		end
-		t.rt()
-	end
-	if turtle.detect() then
-		turtle.dig()
-		x,y,z = t.getLocFd()
-		pushLoc(x,y,z)
 	end
 
-	h,x,y,z = t.getLoc()
-	scannedLocations[hashLoc(x,y,z)] = true
+	return scan
 end
 
+function drillUp()
+	local scan = getScanList()
+
+	local size = maxY - minY
+	local count = -1
+
+	print("Drilling up.. start")
+	while t.detectUp() or count < size do
+		print(count)
+		count = count + 1
+
+		-- check for blocks
+		for i=1,4 do
+			if not scan[i] then
+				t.setHeading(i-1)
+				if t.detect() then
+					x,y,z = t.getLocFd()
+					pushLoc(x,z)
+					scan[i] = true
+				end
+			end
+		end
+
+		t.upDigAttack()
+	end
+
+	-- check for blocks
+	for i=1,4 do
+		if not scan[i] then
+			t.setHeading(i-1)
+			if t.detect() then
+				x,y,z = t.getLocFd()
+				pushLoc(x,z)
+				scan[i] = true
+			end
+		end
+	end
+
+	if count >= size then
+		maxY = count + minY
+	end
+
+	print("Drilling up.. done")
+end
+
+function drillDn()
+	local scan = getScanList()
+
+	local size = maxY - minY
+	local count = -1
+
+	while t.detectDown() or count < size do
+		count = count + 1
+
+		-- check for blocks
+		for i=1,4 do
+			if not scan[i] then
+				t.setHeading(i-1)
+				if t.detect() then
+					x,y,z = t.getLocFd()
+					pushLoc(x,z)
+					scan[i] = true
+				end
+			end
+		end
+
+		t.dnDigAttack()
+	end
+
+	-- check for blocks
+	for i=1,4 do
+		if not scan[i] then
+			t.setHeading(i-1)
+			if t.detect() then
+				x,y,z = t.getLocFd()
+				pushLoc(x,z)
+				scan[i] = true
+			end
+		end
+	end
+
+	if count >= size then
+		minY = maxY - count
+	end
+end
 
 t.setLoc(0,0,0,0)
 
@@ -71,17 +151,37 @@ t.setLoc(0,0,0,0)
 while t.up() do
 end
 
-scan()
 
+-- seed the run
+local h,x,y,z = t.getLoc()
+minY = y
+maxY = y
+
+print(x..","..y..","..z)
+pushLoc(x,z)
+
+local switch = 0
 while pq.size(newLocations) > 0 do
-	local x,y,z = popLoc()
+	local x,z = popLoc()
 
 	if x == nil then
 		break
 	end
 
-	t.goto(x,y,z)
-	scan()
+
+	if switch == 0 then
+		print(x..","..minY..","..z)
+		t.goto(x,minY - 1,z)
+		drillUp()
+	else
+		print(x..","..maxY..","..z)
+		t.goto(x,maxY + 1,z)
+		drillDn()
+	end
+
+	scannedLocations[hashLoc(x,z)] = true
+
+	switch = (switch + 1) % 2
 end
 
 t.goto(0,0,0)

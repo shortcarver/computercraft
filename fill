@@ -53,6 +53,7 @@ function doFill()
 		t.downDigAttack()
 		depth = depth + 1
 		t.digDown()
+		fillWalls()
 	end
 
 	t.placeUp(2)
@@ -61,18 +62,17 @@ function doFill()
 		t.downDigAttack()
 		depth = depth + 1
 		t.digDown()
+		fillWalls()
 	end
 
 	for i=1,depth-1 do
 		if findMats() then
 			t.placeDown()
-			fillWalls()
 		end
 		t.upDigAttack()
 	end
 	if findMats() then
 		t.placeDown()
-		fillWalls()
 	end
 
 	t.up()

@@ -59,6 +59,8 @@ end
 t.setLoc(0,0,0,0)
 
 t.setMinFuelLevel(500)
+turtle.select(1)
+t.select(1)
 
 -- first line
 for i=1,5 do
@@ -141,6 +143,7 @@ t.goto(0,0,0)
 t.setHeading(0)
 t.compactInventory()
 t.fuel(true)
-empty()    
+empty()
+t.select(1)
 
 
