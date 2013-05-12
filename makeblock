@@ -1,0 +1,88 @@
+
+function loadInventory()
+	t.select(1)
+
+	-- fill inventory
+	while turtle.suckDown() and pickStack() == 0 do
+		os.sleep(0.5)
+	end
+end
+
+function purgeSmall()
+	for i=1,16 do
+		if t.getItemCount(i) < 9 and t.getItemCount(i) > 0 then
+			t.select(i)
+			turtle.dropDown()
+		end
+	end
+end
+
+function pickStack()
+	local i = 1
+	for i=1,16 do
+		if t.getItemCount(i) >= 9 then
+			return i
+		end
+	end
+
+	return 0
+end
+
+function transferAndPurge(location)
+	if location ~= 16 and t.getItemCount(16) > 0 then
+		t.select(16)
+		turtle.dropDown()
+		t.select(location)
+		turtle.transferTo(16)
+	elseif location ~= 16 then
+		t.select(location)
+		turtle.transferTo(16)
+	end
+
+	-- purge other items
+	for i=1,15 do
+		if t.getItemCount(i) > 0 then
+			t.select(i)
+			turtle.dropDown()
+		end
+	end
+end
+
+function buildBlocks()
+	t.select(16)
+
+	-- distribute and build
+	local count = t.getItemCount(16)
+	local step = math.floor(count/9)
+
+	t.dropDown(count - step * 9)
+
+	turtle.transferTo(1,step)
+	turtle.transferTo(2,step)
+	turtle.transferTo(3,step)
+	turtle.transferTo(5,step)
+	turtle.transferTo(6,step)
+	turtle.transferTo(7,step)
+	turtle.transferTo(9,step)
+	turtle.transferTo(10,step)
+	turtle.transferTo(11,step)
+
+	turtle.craft()
+	turtle.drop()
+end
+
+
+while true do
+	loadInventory()
+	purgeSmall()
+
+	local stack = pickStack()
+
+	if stack == 0 then
+		print("nothing to do")
+		error()
+	end
+
+	transferAndPurge(stack)
+	buildBlocks()
+end

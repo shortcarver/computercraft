@@ -2,186 +2,169 @@
 -- slot 1 = fuel
 -- slot 2+ = empty
 
-
 local maxY = 0
 local minY = 0
 local scannedLocations = {}
-local newLocations = pq.create(false)
+local newLocations = {}
+local roofLocations = {}
+local roofScanned = {}
 
-function hashLoc(x,z)
-	return (x + 500)..","..(z + 500)
+
+function hashLoc(x,y,z)
+	return x..","..y..","..z
 end
 
-function isHandled(x,z)
-	local hash = hashLoc(x,z)
-	if scannedLocations[hash] then
+function isQueued(x,y,z)
+	return newLocations[hashLoc(x,y,z)] ~= nil
+end
+
+function isScanned(x,y,z)
+	return scannedLocations[hashLoc(x,y,z)] ~= nil
+end
+
+function isHandled(x,y,z)
+	if isQueued(x,y,z) then
 		return true
 	end
 
-	return pq.containsKey(newLocations, hash)
+	return isScanned(x,y,z)
 end
 
-function pushLoc(x,z)
-	local lstr = hashLoc(x,z)
-
-	if scannedLocations[lstr] then
-		return
-	end
-
-	if pq.containsKey(newLocations, lstr) then
-		return
-	end
-
-	pq.put(newLocations, {x=x,z=z}, lstr)
+function setScanned(x,y,z)
+	scannedLocations[hashLoc(x,y,z)] = true
 end
 
-function popLoc()
-	if pq.size(newLocations) > 0 then
-		local ret = pq.pop(newLocations)
+function setScannedRoof(x,y,z)
+	roofScanned[hashLoc(x,y,z)] = true
+end
 
-		return ret.x, ret.z
+function addQueueRoof(x,y,z)
+	roofLocations[hashLoc(x,y,z)] = {x=x,y=y,z=z}
+end
+
+function addQueue(x,y,z)
+	if not isHandled(x,y,z) then
+		print("adding "..x..","..y..","..z)
+		newLocations[hashLoc(x,y,z)] = {x=x,y=y,z=z}
 	end
-	return nil
+end
+
+function findNearestPoint()
+	local h,x,y,z = t.getLoc()
+
+	local selV = nil
+	local selK = nil
+	local minSize = -1
+
+	for key,value in pairs(newLocations) do
+		if value ~= nil then
+
+			vt.reset()
+			vt.setLoc(h,x,y,z)
+
+			vt.goto(value.x,value.y,value.z)
+			moves = vt.getMoves()
+			
+			if minSize == -1 then
+				minSize = moves
+				selV = value
+				selK = key
+			elseif minSize > moves then
+				minSize = moves
+				selV = value
+				selK = key
+			end
+
+			if moves == 1 then
+				break
+			end
+		end
+	end
+
+	return selK
 end
 
 function getScanList()
-	local scan = {false, false, false, false}
+	local list = {false, false, false, false}
+
+	vt.reset()
+	vt.setLoc(t.getLoc())
 
 	for i=1,4 do
-		t.setHeading(i-1)
-		local x,y,z = t.getLocFd()
-
-		if isHandled(x,z) then
-			scan[i] = true
-		end
+		local h = vt.getLoc()
+		list[h+1] = not isHandled(vt.getLocFd())
+		vt.rt()
 	end
 
-	return scan
+	return list
 end
 
-function drillUp()
-	local scan = getScanList()
-
-	local size = maxY - minY
-	local count = -1
-
-	print("Drilling up.. start")
-	while t.detectUp() or count < size do
-		print(count)
-		count = count + 1
-
-		-- check for blocks
-		for i=1,4 do
-			if not scan[i] then
-				t.setHeading(i-1)
-				if t.detect() then
-					x,y,z = t.getLocFd()
-					pushLoc(x,z)
-					scan[i] = true
-				end
-			end
-		end
-
-		t.upDigAttack()
+function scan()
+	if t.detectUp() then
+		addQueueRoof(t.getLocUp())
+	else
+		setScannedRoof(t.getLocUp())
 	end
+	
+	local list = getScanList()
+	
+	local h = t.getLoc()
 
-	-- check for blocks
 	for i=1,4 do
-		if not scan[i] then
-			t.setHeading(i-1)
+		local nh = ((i-1) + h) % 4
+		if list[nh + 1] then
+			t.setHeading(nh)
 			if t.detect() then
-				x,y,z = t.getLocFd()
-				pushLoc(x,z)
-				scan[i] = true
+				addQueue(t.getLocFd())
+			else
+				setScanned(t.getLocFd())
 			end
 		end
 	end
-
-	if count >= size then
-		maxY = count + minY
-	end
-
-	print("Drilling up.. done")
 end
 
-function drillDn()
-	local scan = getScanList()
-
-	local size = maxY - minY
-	local count = -1
-
-	while t.detectDown() or count < size do
-		count = count + 1
-
-		-- check for blocks
-		for i=1,4 do
-			if not scan[i] then
-				t.setHeading(i-1)
-				if t.detect() then
-					x,y,z = t.getLocFd()
-					pushLoc(x,z)
-					scan[i] = true
-				end
-			end
-		end
-
-		t.dnDigAttack()
-	end
-
-	-- check for blocks
-	for i=1,4 do
-		if not scan[i] then
-			t.setHeading(i-1)
-			if t.detect() then
-				x,y,z = t.getLocFd()
-				pushLoc(x,z)
-				scan[i] = true
-			end
-		end
-	end
-
-	if count >= size then
-		minY = maxY - count
-	end
+function isEmpty()
+	return  next(newLocations) == nil
 end
+
 
 t.setLoc(0,0,0,0)
 
--- find the bottom of our target
-while t.up() do
-end
+scan()
 
+print(newLocations)
 
--- seed the run
-local h,x,y,z = t.getLoc()
-minY = y
-maxY = y
+while not isEmpty() do
+	local key = findNearestPoint()
 
-print(x..","..y..","..z)
-pushLoc(x,z)
-
-local switch = 0
-while pq.size(newLocations) > 0 do
-	local x,z = popLoc()
-
-	if x == nil then
-		break
+	if key == nil then
+		print("oops!")
+		error()
 	end
 
+	local value = newLocations[key]
 
-	if switch == 0 then
-		print(x..","..minY..","..z)
-		t.goto(x,minY - 1,z)
-		drillUp()
+	newLocations[key] = nil
+
+	t.goto(value.x,value.y,value.z)
+
+	setScanned(value.x,value.y,value.z)
+
+	if t.detect() then
+		addQueue(t.getLocFd())
 	else
-		print(x..","..maxY..","..z)
-		t.goto(x,maxY + 1,z)
-		drillDn()
+		setScanned(t.getLocFd())
 	end
 
-	scannedLocations[hashLoc(x,z)] = true
+	scan()
 
-	switch = (switch + 1) % 2
+	if isEmpty() then
+		newLocations = roofLocations
+		scannedLocations = roofScanned
+		roofLocations = {}
+		roofScanned = {}
+	end
+
 end
 
 t.goto(0,0,0)

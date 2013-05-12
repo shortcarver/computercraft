@@ -1,0 +1,24 @@
+
+
+function findDirection()
+	t.rt(2)
+
+	for i=1,3 do
+		if t.detect() then
+			return true
+		end
+		t.rt()
+	end
+
+	return t.detect()
+end
+
+while true do
+	while t.detect() do
+		t.fdDigAttack()
+	end
+
+	if not findDirection() then
+		error()
+	end
+end

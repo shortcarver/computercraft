@@ -1,12 +1,17 @@
 -- turtle short cuts. mainly handles things like fuel, and special digging
 -- provides most of the turtle api + some more features
 
+local ZPOS = 0
+local XNEG = 1
+local ZNEG = 2
+local XPOS = 3
+
 local _th = 0
 local _tx = 0
 local _ty = 0
 local _tz = 0
 local _callback = nil
-local _sel = 1
+local _sel = 0
 local FALL_TIME = 0.1
 local SUCK_TIME = 0.1
 local _minLevel = 10
@@ -45,38 +50,54 @@ function getLocDn()
 end
 
 function getLocFd()
-	if _th%2 == 0 then
-		return _tx, _ty, _tz + (_th - 1)
-	else
-		return _tx - (_th - 2), _ty, _tz
+	if _th == ZPOS then
+		return _tx, _ty, _tz + 1
+	elseif _th == ZNEG then
+		return _tx, _ty, _tz - 1
+	elseif _th == XPOS then
+		return _tx + 1, _ty, _tz
+	elseif _th == XNEG then
+		return _tx - 1, _ty, _tz
 	end
 end
 
 function getLocBk()
-	if _th%2 == 0 then
-		return _tx, _ty, _tz - (_th - 1)
-	else
-		return _tx + (_th - 2), _ty, _tz
+	if _th == ZPOS then
+		return _tx, _ty, _tz - 1
+	elseif _th == ZNEG then
+		return _tx, _ty, _tz + 1
+	elseif _th == XPOS then
+		return _tx - 1, _ty, _tz
+	elseif _th == XNEG then
+		return _tx + 1, _ty, _tz
 	end
 end
 
 function getLocRt()
 	local h = (_th + 1) % 4
 
-	if h%2 == 0 then
-		return _tx, _ty, _tz + (h - 1)
-	else
-		return _tx - (h - 2), _ty, _tz
+	if h == ZPOS then
+		return _tx, _ty, _tz + 1
+	elseif h == ZNEG then
+		return _tx, _ty, _tz - 1
+	elseif h == XPOS then
+		return _tx + 1, _ty, _tz
+	elseif h == XNEG then
+		return _tx - 1, _ty, _tz
 	end
 end
 
 function getLocLt()
 	local h = ((_th - 1) + 4) % 4
 
-	if h%2 == 0 then
-		return _tx, _ty, _tz + (h - 1)
-	else
-		return _tx - (h - 2), _ty, _tz
+	if h == ZPOS then
+		return _tx, _ty, _tz + 1
+	elseif h == ZNEG then
+		return _tx, _ty, _tz - 1
+	elseif h == XPOS then
+		return _tx + 1, _ty, _tz
+	elseif h == XNEG then
+		return _tx - 1, _ty, _tz
 	end
 end
 
@@ -178,20 +199,28 @@ function attackDown()
 	return turtle.attackDown()
 end
 
+function _drop(fn, i)
+	if i == nil then
+		return fn()
+	else
+		return fn(i)
+	end
+end
+
 function drop(i)
-	return turtle.drop(i)
+	return _drop(turtle.drop, i)
 end
 
 function dropUp(i)
-	return turtle.dropUp(i)
+	return _drop(turtle.dropUp, i)
 end
 
 function dropDown(i)
-	return turtle.dropDown(i)
+	return _drop(turtle.dropDown, i)
 end
 
 function dropDn(i)
-	return turtle.dropDown(i)
+	return dropDown(i)
 end
 
 -- basic movement functions --
@@ -242,10 +271,14 @@ function forward(count)
 		local flag = turtle.forward()
 
 		if flag then
-			if _th%2 == 0 then
-				_tz = _tz + (_th - 1)
-			else
-				_tx = _tx - (_th - 2)
+			if _th == ZPOS then
+				_tz = _tz + 1
+			elseif _th == ZNEG then
+				_tz = _tz - 1
+			elseif _th == XPOS then
+				_tx = _tx + 1
+			elseif _th == XNEG then
+				_tx = _tx - 1
 			end
 		end
 		cb()
@@ -268,10 +301,14 @@ function back(count)
 		local flag = turtle.back()
 
 		if flag then
-			if _th%2 == 0 then
-				_tz = _tz - (_th - 1)
-			else
-				_tx = _tx + (_th - 2)
+			if _th == ZPOS then
+				_tz = _tz - 1
+			elseif _th == ZNEG then
+				_tz = _tz + 1
+			elseif _th == XPOS then
+				_tx = _tx - 1
+			elseif _th == XNEG then
+				_tx = _tx + 1
 			end
 		end
 		cb()
@@ -599,9 +636,9 @@ end
 
 function moveToX(x)
 	if _tx > x then
-		turnHeading(3)
+		turnHeading(XNEG)
 	elseif _tx < x then
-		turnHeading(1)
+		turnHeading(XPOS)
 	end
 
 	while _tx ~= x do
@@ -611,9 +648,9 @@ end
 
 function moveToZ(z)
 	if _tz > z then
-		turnHeading(0)
+		turnHeading(ZNEG)
 	elseif _tz < z then
-		turnHeading(2)
+		turnHeading(ZPOS)
 	end
 
 	while _tz ~= z do

@@ -1,0 +1,298 @@
+
+local ZPOS = 0
+local XNEG = 1
+local ZNEG = 2
+local XPOS = 3
+
+local _th = 0
+local _tx = 0
+local _ty = 0
+local _tz = 0
+local _fuel = 0
+local _moves = 0
+
+function reset()
+	_th = 0
+	_tx = 0
+	_ty = 0
+	_tz = 0
+	_fuel = 0
+	_moves = 0
+end
+
+function getMoves()
+	return _moves
+end
+
+function resetMoves()
+	_moves = 0
+end
+
+function getFuel()
+	return _fuel
+end
+
+function resetFuel()
+	_fuel = 0
+end
+
+function setLoc(h,x,y,z)
+	_th = h
+	_tx = x
+	_ty = y
+	_tz = z
+end
+
+function getHeading()
+	return _th
+end
+
+function getLoc()
+	return _th,_tx,_ty,_tz
+end
+
+function getLocUp()
+	return _tx,_ty+1,_tz
+end
+
+function getLocDn()
+	return _tx,_ty-1,_tz
+end
+
+function getLocFd()
+	if _th == ZPOS then
+		return _tx, _ty, _tz + 1
+	elseif _th == ZNEG then
+		return _tx, _ty, _tz - 1
+	elseif _th == XPOS then
+		return _tx + 1, _ty, _tz
+	elseif _th == XNEG then
+		return _tx - 1, _ty, _tz
+	end
+end
+
+function getLocBk()
+	if _th == ZPOS then
+		return _tx, _ty, _tz - 1
+	elseif _th == ZNEG then
+		return _tx, _ty, _tz + 1
+	elseif _th == XPOS then
+		return _tx - 1, _ty, _tz
+	elseif _th == XNEG then
+		return _tx + 1, _ty, _tz
+	end
+end
+
+function getLocRt()
+	local h = (_th + 1) % 4
+
+	if h == ZPOS then
+		return _tx, _ty, _tz + 1
+	elseif h == ZNEG then
+		return _tx, _ty, _tz - 1
+	elseif h == XPOS then
+		return _tx + 1, _ty, _tz
+	elseif h == XNEG then
+		return _tx - 1, _ty, _tz
+	end
+end
+
+function getLocLt()
+	local h = ((_th - 1) + 4) % 4
+
+	if h == ZPOS then
+		return _tx, _ty, _tz + 1
+	elseif h == ZNEG then
+		return _tx, _ty, _tz - 1
+	elseif h == XPOS then
+		return _tx + 1, _ty, _tz
+	elseif h == XNEG then
+		return _tx - 1, _ty, _tz
+	end
+end
+
+function fuel()
+	_fuel = _fuel + 1
+end
+
+function up(count)
+	if count == nil then
+		count = 1
+	end
+
+	for i=1, count do
+		fuel()
+		_moves = _moves + 1
+		_ty = _ty + 1
+	end
+end
+
+function forward(count)
+	if count == nil then
+		count = 1
+	end
+
+	for i=1,count do
+		fuel()
+		_moves = _moves + 1
+		if _th == ZPOS then
+			_tz = _tz + 1
+		elseif _th == ZNEG then
+			_tz = _tz - 1
+		elseif _th == XPOS then
+			_tx = _tx + 1
+		elseif _th == XNEG then
+			_tx = _tx - 1
+		end
+	end
+end
+
+function back(count)
+	if count == nil then
+		count = 1
+	end
+
+	for i=1,count do
+		fuel()
+		_moves = _moves + 1
+		if _th == ZPOS then
+			_tz = _tz - 1
+		elseif _th == ZNEG then
+			_tz = _tz + 1
+		elseif _th == XPOS then
+			_tx = _tx - 1
+		elseif _th == XNEG then
+			_tx = _tx + 1
+		end
+	end
+end
+
+function down(count)
+	if count == nil then
+		count = 1
+	end
+
+	for i=1,count do
+		fuel()
+		_moves = _moves + 1
+		_ty = _ty - 1
+	end
+	return true
+end
+
+function turnRight(count)
+	if count == nil then
+		count = 1
+	end
+
+	for i=1,count do
+		_moves = _moves + 1
+		_th = (_th + 1) % 4
+	end
+end
+
+function turnLeft(count)
+	if count == nil then
+		count = 1
+	end
+
+	for i=1,count do
+		_moves = _moves + 1
+		_th = ((_th - 1) + 4) % 4
+	end
+end
+
+function turnHeading(t)
+	if t == _th then
+		return
+	end
+
+	if _th - t == 1 or (t == 3 and _th == 0) then
+		while _th ~= t do
+			lt()
+		end
+	else
+		while _th ~= t do
+			rt()
+		end
+	end
+end
+
+function setHeading(t)
+	return turnHeading(t)
+end
+
+
+-- movement shortcuts --
+function rt(count)
+	return turnRight(count)
+end
+
+function lt(count)
+	return turnLeft(count)
+end
+
+function dn(count)
+	return down(count)
+end
+
+function fd(count)
+	return forward(count)
+end
+
+function bk(count)
+	return back(count)
+end
+
+function moveToX(x)
+	if _tx > x then
+		turnHeading(XNEG)
+	elseif _tx < x then
+		turnHeading(XPOS)
+	end
+
+	while _tx ~= x do
+		fd()
+	end
+end
+
+function moveToZ(z)
+	if _tz > z then
+		turnHeading(ZNEG)
+	elseif _tz < z then
+		turnHeading(ZPOS)
+	end
+
+	while _tz ~= z do
+		fd()
+	end
+end
+
+function moveToY(y)
+	while y > _ty do
+		up()
+	end
+
+	while y < _ty do
+		dn()
+	end
+end
+
+
+function goto(x,y,z)
+	if _ty < y then
+		moveToY(y)
+	end
+
+	if math.abs(_tx - x) < math.abs(_tz - z) then
+		moveToX(x)
+		moveToZ(z)
+	else
+		moveToZ(z)
+		moveToX(x)
+	end
+
+	if _ty > y then
+		moveToY(y)
+	end
+end
