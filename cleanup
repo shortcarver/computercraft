@@ -2,13 +2,16 @@
 -- slot 1 = fuel
 -- slot 2+ = empty
 
-local maxY = 0
-local minY = 0
+local maxDist = 32
 local scannedLocations = {}
 local newLocations = {}
 local roofLocations = {}
 local roofScanned = {}
 
+
+function isWithinRange(x,y,z)
+	return math.abs(x) < maxDist and math.abs(z) < maxDist and math.abs(y) < maxDist		
+end
 
 function hashLoc(x,y,z)
 	return x..","..y..","..z
@@ -31,21 +34,29 @@ function isHandled(x,y,z)
 end
 
 function setScanned(x,y,z)
-	scannedLocations[hashLoc(x,y,z)] = true
+	if isWithinRange(x,y,z) then
+		scannedLocations[hashLoc(x,y,z)] = true
+	end
 end
 
 function setScannedRoof(x,y,z)
-	roofScanned[hashLoc(x,y,z)] = true
+	if isWithinRange(x,y,z) then
+		roofScanned[hashLoc(x,y,z)] = true
+	end
 end
 
 function addQueueRoof(x,y,z)
-	roofLocations[hashLoc(x,y,z)] = {x=x,y=y,z=z}
+	if isWithinRange(x,y,z) then
+		roofLocations[hashLoc(x,y,z)] = {x=x,y=y,z=z}
+	end
 end
 
 function addQueue(x,y,z)
-	if not isHandled(x,y,z) then
-		print("adding "..x..","..y..","..z)
-		newLocations[hashLoc(x,y,z)] = {x=x,y=y,z=z}
+	if isWithinRange(x,y,z) then
+		if not isHandled(x,y,z) then
+			print("adding "..x..","..y..","..z)
+			newLocations[hashLoc(x,y,z)] = {x=x,y=y,z=z}
+		end
 	end
 end
 
@@ -121,17 +132,17 @@ function scan()
 			end
 		end
 	end
+
+	t.setHeading(h)
 end
 
-function checkInventory()
-	if t.isInventoryFull() then
-		t.goto(0,0,0)
-		t.setHeading(2)
-		for i=2,16 do
-			local count = t.getItemCount(i)
-			if count > 0 then
-				t.drop(count)
-			end
+function dumpInventory()
+	t.goto(0,0,0)
+	t.setHeading(2)
+	for i=1,16 do
+		local count = t.getItemCount(i)
+		if count > 0 then
+			t.drop(count)
 		end
 	end
 end
@@ -140,46 +151,117 @@ function isEmpty()
 	return  next(newLocations) == nil
 end
 
+function _save(name, data)
+	local f,err = fs.open("/"..name..".cleanup", "w")
+	f.write(textutils.serialize(data))
+	f.flush()
+	f.close()
+end
 
-t.setLoc(0,0,0,0)
+function save()
+	_save("scannedLocations", scannedLocations)
+	_save("newLocations", newLocations)
+	_save("roofLocations", roofLocations)
+	_save("roofScanned", roofScanned)
+end
 
-scan()
-
-print(newLocations)
-
-while not isEmpty() do
-	local key = findNearestPoint()
-
-	if key == nil then
-		print("oops!")
-		error()
+function _load(name)
+	if not fs.exists("/"..name..".cleanup") then
+		return {}
 	end
 
-	local value = newLocations[key]
+	local f, err = fs.open("/"..name..".cleanup", "r")
 
-	newLocations[key] = nil
+	local data = f.readLine()
 
-	t.goto(value.x,value.y,value.z)
+	f.close()
 
-	setScanned(value.x,value.y,value.z)
+	return textutils.unserialize(data)
+end
 
-	if t.detect() then
-		addQueue(t.getLocFd())
-	else
-		setScanned(t.getLocFd())
+function load()
+	scannedLocations = _load("scannedLocations")
+	newLocations = _load("newLocations")
+	roofLocations = _load("roofLocations")
+	roofScanned = _load("roofScanned")
+end
+
+function isFuelEmpty()
+	local fuel = turtle.getFuelLevel()
+
+	vt.reset()
+	vt.setLoc(t.getLoc())
+	vt.goto(0,0,0)
+
+	local reqFuel =  vt.getFuel() + 10
+
+	if reqFuel >= fuel then
+		return true
 	end
+
+	return false
+end
+
+
+function cleanup()
+	t.setLoc(0,0,0,0)
+
+	t.fdDigAttack()
 
 	scan()
 
-	if isEmpty() then
-		newLocations = roofLocations
-		scannedLocations = roofScanned
-		roofLocations = {}
-		roofScanned = {}
+	while not isEmpty() do
+		local key = findNearestPoint()
+
+		if key == nil then
+			print("oops!")
+			error()
+		end
+
+		local value = newLocations[key]
+
+		newLocations[key] = nil
+
+		t.goto(value.x,value.y,value.z)
+
+		setScanned(value.x,value.y,value.z)
+
+		if t.detect() then
+			addQueue(t.getLocFd())
+		else
+			setScanned(t.getLocFd())
+		end
+
+		scan()
+
+		if isEmpty() then
+			newLocations = roofLocations
+			scannedLocations = roofScanned
+			roofLocations = {}
+			roofScanned = {}
+		end
+
+		if isFuelEmpty() then
+			print("Out of fuel, please refuel!")
+			save()
+			dumpInventory()
+			break
+		elseif t.isInventoryFull() then
+			print("Out of space")
+			dumpInventory()
+		end
 	end
 
-	checkInventory()
+	dumpInventory()
 
+	t.rt(2)
 end
 
-t.goto(0,0,0)
+local args = { ... }
+
+if args[1] ~= nil and args[1] == "resume" then
+	load()
+end
+
+cleanup()
+
