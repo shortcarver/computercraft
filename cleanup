@@ -123,6 +123,19 @@ function scan()
 	end
 end
 
+function checkInventory()
+	if t.isInventoryFull() then
+		t.goto(0,0,0)
+		t.setHeading(2)
+		for i=2,16 do
+			local count = t.getItemCount(i)
+			if count > 0 then
+				t.drop(count)
+			end
+		end
+	end
+end
+
 function isEmpty()
 	return  next(newLocations) == nil
 end
@@ -164,6 +177,8 @@ while not isEmpty() do
 		roofLocations = {}
 		roofScanned = {}
 	end
+
+	checkInventory()
 
 end
 
