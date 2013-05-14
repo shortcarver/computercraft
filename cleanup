@@ -5,12 +5,10 @@
 local maxDist = 32
 local scannedLocations = {}
 local newLocations = {}
-local roofLocations = {}
-local roofScanned = {}
 
 
 function isWithinRange(x,y,z)
-	return math.abs(x) < maxDist and math.abs(z) < maxDist and math.abs(y) < maxDist		
+	return math.abs(x) < maxDist and math.abs(z) < maxDist and math.abs(y) < maxDist * 2 and y >=0
 end
 
 function hashLoc(x,y,z)
@@ -36,18 +34,6 @@ end
 function setScanned(x,y,z)
 	if isWithinRange(x,y,z) then
 		scannedLocations[hashLoc(x,y,z)] = true
-	end
-end
-
-function setScannedRoof(x,y,z)
-	if isWithinRange(x,y,z) then
-		roofScanned[hashLoc(x,y,z)] = true
-	end
-end
-
-function addQueueRoof(x,y,z)
-	if isWithinRange(x,y,z) then
-		roofLocations[hashLoc(x,y,z)] = {x=x,y=y,z=z}
 	end
 end
 
@@ -112,10 +98,17 @@ end
 
 function scan()
 	if t.detectUp() then
-		addQueueRoof(t.getLocUp())
+		addQueue(t.getLocUp())
 	else
-		setScannedRoof(t.getLocUp())
+		setScanned(t.getLocUp())
 	end
+
+	if t.detectDown() then
+		addQueue(t.getLocDn())
+	else
+		setScanned(t.getLocDn())
+	end
+
 	
 	local list = getScanList()
 	
@@ -161,8 +154,6 @@ end
 function save()
 	_save("scannedLocations", scannedLocations)
 	_save("newLocations", newLocations)
-	_save("roofLocations", roofLocations)
-	_save("roofScanned", roofScanned)
 end
 
 function _load(name)
@@ -182,8 +173,24 @@ end
 function load()
 	scannedLocations = _load("scannedLocations")
 	newLocations = _load("newLocations")
-	roofLocations = _load("roofLocations")
-	roofScanned = _load("roofScanned")
+	
+	if fs.exists("/roofLocations.cleanup") then
+		local roofLocations = _load("roofLocations")
+		for key,value in pairs(roofLocations) do
+			newLocations[key] = value
+		end
+
+		fs.delete("roofLocations.cleanup")
+	end
+
+	if fs.exists("/roofScanned.cleanup") then
+		local roofScanned = _load("roofScanned")
+		for key,value in pairs(roofScanned) do
+			scannedLocations[key] = value
+		end
+		fs.delete("roofScanned.cleanup")
+	end
+
 end
 
 function isFuelEmpty()
@@ -233,13 +240,6 @@ function cleanup()
 		end
 
 		scan()
-
-		if isEmpty() then
-			newLocations = roofLocations
-			scannedLocations = roofScanned
-			roofLocations = {}
-			roofScanned = {}
-		end
 
 		if isFuelEmpty() then
 			print("Out of fuel, please refuel!")

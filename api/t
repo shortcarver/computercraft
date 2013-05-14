@@ -150,6 +150,10 @@ function compareDown(i)
 	return _compare(turtle.compareDown, i)
 end
 
+function compareDn(i)
+	return _compare(turtle.compareDown, i)
+end
+
 function detect()
 	return turtle.detect()
 end
@@ -159,6 +163,10 @@ function detectUp()
 end
 
 function detectDown()
+	return turtle.detectDown()
+end
+
+function detectDn()
 	return turtle.detectDown()
 end
 
