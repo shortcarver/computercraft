@@ -1,6 +1,5 @@
 -- Will clean up floating blocks and then return to start
--- slot 1 = fuel
--- slot 2+ = empty
+-- slot 1+ = empty
 
 local maxDist = 32
 local scannedLocations = {}
@@ -61,6 +60,13 @@ function findNearestPoint()
 
 			vt.goto(value.x,value.y,value.z)
 			moves = vt.getMoves()
+
+			-- weight based on height
+			if value.y < y then
+				moves = moves + 5
+			elseif value.y == y then
+				moves = moves + 1
+			end
 			
 			if minSize == -1 then
 				minSize = moves
@@ -135,9 +141,12 @@ function dumpInventory()
 	for i=1,16 do
 		local count = t.getItemCount(i)
 		if count > 0 then
+			t.select(i)
 			t.drop(count)
 		end
 	end
+
+	t.select(1)
 end
 
 function isEmpty()
@@ -262,6 +271,9 @@ local args = { ... }
 if args[1] ~= nil and args[1] == "resume" then
 	load()
 end
+
+turtle.select(1)
+t.select(1)
 
 cleanup()
 
