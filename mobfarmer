@@ -1,0 +1,215 @@
+local PARENT_SIDE = "front"
+local CHILD_SIDE = "back"
+local isFirst = false
+local isLast = false
+
+function waitForSignal(side)
+	while not redstone.getInput(side) do
+		os.sleep(1)
+	end
+end
+
+function waitForNoSignal(side)
+	while redstone.getInput(side) do
+		os.sleep(1)
+	end
+end
+
+function emptyGoods(isFuel)
+	print("Empty Goods")
+	print("Waiting for parent signal")
+	-- wait for ready signal from parent
+	if not isFirst then
+		waitForSignal(PARENT_SIDE)
+		redstone.setOutput(PARENT_SIDE, true)
+		os.sleep(1)
+	end
+
+	print("sending materials")
+	-- send materials
+	for i=1,16 do
+		if t.getItemCount(i) > 0 then
+			t.select(i)
+			if isFirst and not isFuel then
+				t.dropDown(t.getItemCount(i))
+			else
+				t.drop(t.getItemCount(i))
+			end
+			os.sleep(1)
+		end
+	end
+
+
+	if not isLast then
+		print("notify child")
+		-- tell child that I'm ready for materials
+		redstone.setOutput(CHILD_SIDE, true)
+		os.sleep(1)
+
+		print("wait for child response")
+		-- wait for child response
+		waitForSignal(CHILD_SIDE)
+
+		print("passing forward materials")
+		-- forward materials passed
+		while redstone.getInput(CHILD_SIDE) do
+			for i=1,16 do
+				if t.getItemCount(i) > 0 then
+					t.select(i)
+					if isFirst and not isFuel then
+						t.dropDown(t.getItemCount(i))
+					else
+						t.drop(t.getItemCount(i))
+					end
+				end
+			end
+			os.sleep(1)
+		end
+	end
+
+	print("empty complete")
+	-- I am complete, turn off
+	redstone.setOutput(PARENT_SIDE, false)
+	redstone.setOutput(CHILD_SIDE, false)
+	os.sleep(1)
+
+	print("waiting for neighbors")
+	if not isFront then
+		waitForNoSignal(PARENT_SIDE)
+	end
+	if not isLast then
+		waitForNoSignal(CHILD_SIDE)
+	end
+
+	os.sleep(1)
+end
+
+function refuel()
+	print("refuel")
+	if not isFirst then
+		print("waiting for parent signal")
+		-- wait for fuel signal
+		waitForSignal(PARENT_SIDE)
+		redstone.setOutput(PARENT_SIDE, true)
+		os.sleep(1)
+	end
+
+	-- suck up all the fuel I can
+	print("gathering fuel")
+	t.select(1)
+	while turtle.suck() do
+		os.sleep(1)
+	end
+
+	print("refueling")
+	-- refuel myself
+	while turtle.getFuelLevel() < 36 do
+		turtle.refuel(1)
+		os.sleep(1)
+	end
+
+	if not isLast then
+		-- tell the child that I'm ready
+		print("notifying child")
+		redstone.setOutput(CHILD_SIDE, true)
+		os.sleep(1)
+
+		-- wait for child signal that it is done
+		print("waiting for child complete")
+		waitForSignal(CHILD_SIDE)
+		waitForNoSignal(CHILD_SIDE)
+		print("child complete")
+		redstone.setOutput(CHILD_SIDE, false)
+		os.sleep(1)
+	end
+
+	if not isFirst then
+		-- tell parent that I'm done
+		print("notify parent complete")
+		redstone.setOutput(PARENT_SIDE, false)
+		os.sleep(1)
+		waitForNoSignal(PARENT_SIDE)
+	end
+
+	-- shutdown
+	print("refuel complete")
+	redstone.setOutput(PARENT_SIDE, false)
+	redstone.setOutput(CHILD_SIDE, false)
+
+	print("waiting for neighbors")
+	if not isFront then
+		waitForNoSignal(PARENT_SIDE)
+	end
+	if not isLast then
+		waitForNoSignal(CHILD_SIDE)
+	end
+
+	os.sleep(1)
+
+	emptyGoods(true)
+end
+
+function kill()
+	print("doing kill run")
+	t.rt()
+
+	t.select(1)
+
+	for i=1,11 do
+		while t.attack() do os.sleep(0.5)  end
+		while t.attackUp() do os.sleep(0.5)  end
+
+		while turtle.suck() do os.sleep(0.5) end
+
+		while not t.fd() do
+			t.attack()
+			t.attackUp()
+		end
+	end
+
+	t.rt(2)
+
+	for i=1,11 do
+		while t.attack() do os.sleep(0.5) end
+		while t.attackUp() do os.sleep(0.5) end
+
+		while turtle.suck() do os.sleep(0.5) end
+
+		while not t.fd() do
+			t.attack()
+			t.attackUp()
+		end
+	end
+
+	t.rt()
+end
+
+local args = { ... }
+
+if args[1] ~= nil then
+	if args[1] == "first" then
+		print("i am first!")
+		isFirst = true
+	elseif args[1] == "last" then
+		print("i am last!")
+		isLast = true
+	end
+end
+
+emptyGoods(false)
+
+while true do
+	if isFirst then
+		if redstone.getInput("left") then
+			print("kill signal detected, stopping")
+			break
+		end
+	end
+
+	refuel()
+	kill()
+	emptyGoods(false)
+	
+	print("going to sleep")
+	os.sleep(5)
+end

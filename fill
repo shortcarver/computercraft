@@ -13,7 +13,22 @@ function countMats()
 	return count
 end
 
+function miniCompact()
+	local i = 16
+	while turtle.getItemCount(3) < 10 and i > 3 do
+		if turtle.getItemCount(i) > 0 then
+			t.select(i)
+			turtle.transferTo(3)
+		end
+		i = i - 1
+	end
+
+	t.select(3)
+end
+
 function findMats()
+	miniCompact()
+
 	for i=3,16 do
 		if turtle.getItemCount(i) > 0 then
 			t.select(i)

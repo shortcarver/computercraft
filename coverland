@@ -133,6 +133,11 @@ elseif command == "continue" then
 	end
 
 	t.compactInventory()
+elseif command == "forever" then
+	while findMats() and turtle.getFuelLevel() > 0 do
+		continue()
+	end
+
 elseif command == "skip" then
 	local val = args[2]
 
