@@ -154,12 +154,16 @@ function mine()
 
 	-- go down, place cap
 	digDown()
-	for i=1,2 do
-		t.downAttack()
-		t.select(1)
-		digDown()
-		depth = depth + 1
-	end
+	t.downAttack()
+	t.select(1)
+	digDown()
+	depth = depth + 1
+
+	checkWalls()
+	t.downAttack()
+	t.select(1)
+	digDown()
+	depth = depth + 1
 
 	t.select(PLUG)
 	t.placeUp()
@@ -195,6 +199,8 @@ function mine()
 
 	-- dig up -- hole 2
 	depth = drillUp(depth)
+
+	checkWalls()
 
 	-- place cap
 	t.select(1)
