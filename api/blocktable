@@ -1,0 +1,31 @@
+function new()
+	local table = {}
+	table.map = {}
+	table.set = set
+	table.get = get
+	table.remove = remove
+	table.exists = exists
+
+	return table
+end
+
+function hashLoc(x,y,z)
+	return x..","..y..","..z
+end
+
+function get(self, x, y, z)
+	return self.map[hashLoc(x,y,z)]
+end
+
+function set(self, x, y, z, value)
+	self.map[hashLoc(x,y,z)] = value
+end
+
+function remove(self, x, y, z)
+	self.map[hashLoc(x,y,z)] = nil
+end
+
+function exists(self, x, y, z)
+	return get(self,x,y,z) ~= nil
+end
+

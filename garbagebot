@@ -1,0 +1,45 @@
+-- a sorting program
+-- slot 1 = empty
+-- slot 2 - 16 = mats to burn
+-- this will suck a stack of items from a chest in front, and if it matches
+-- an item in 2-16 it will dump it to the left
+-- if the stack doesn't match, it will drop the stack behind it
+	
+while true do
+	t.select(1)
+
+	while not turtle.suck() do
+		os.sleep(10)
+	end
+
+	t.select(1)
+
+	-- find index
+	local flag = false
+	for i=2,16,1 do
+		if turtle.compareTo(i) then
+			flag = true
+			break
+		end
+	end
+
+	if not flag then
+		t.rt(2)
+		t.drop()
+		t.rt(2)
+	else
+		t.lt()
+		if t.getItemCount(1) > 0 then
+			t.select(1)
+			t.drop()
+		end
+		t.rt()
+
+		for i=2,16,1 do
+			if t.getItemCount(i) > 1 then
+				t.select(i)
+				t.drop(t.getItemCount(i)-1)
+			end
+		end
+	end
+end

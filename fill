@@ -124,9 +124,9 @@ if #args >= 1 then
 
 		if val ~= nil then
 			for i=1,val do
-				t.fd(2)
+				t.fdDigAttack(2)
 				t.lt()
-				t.fd()
+				t.fdDigAttack()
 				t.rt()
 			end
 		end

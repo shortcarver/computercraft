@@ -3,6 +3,8 @@ local PLUG = 2
 local CHEST = 3
 local JUNKSTART = 4
 local JUNKEND = 5
+local DIRT = 5
+local COBBLE = 2
 
 -- single turtle
 -- local SIDE_LENGTH_START = 1
@@ -33,23 +35,29 @@ end
 
 
 -- place dirt first since we use cobble for surface stuff
-function placeJunkUp()
-	if t.getItemCount(2) > 16 then
-		t.placeUp(2)
+function placeJunkUp(force)
+	force = force or false
+
+	if t.getItemCount(COBBLE) > 20 or force then
+		t.placeUp(COBBLE)
 	end
 end
 
-function placeJunkDn()
-	if t.getItemCount(2) > 16 then
-		t.placeDown(2)
+function placeJunkDn(force)
+	force = force or false
+
+	if t.getItemCount(COBBLE) > 20 or force then
+		t.placeDown(COBBLE)
 	end
 end
 
-function placeJunk()
-	if t.getItemCount(5) > 1 then
-		t.place(5)
-	elseif t.getItemCount(2) > 16 then
-		t.place(2)
+function placeJunk(force)
+	force = force or false
+
+	if t.getItemCount(DIRT) > 1 then
+		t.place(DIRT)
+	elseif t.getItemCount(COBBLE) > 20 or force then
+		t.place(COBBLE)
 	end
 end
 
@@ -94,7 +102,9 @@ function digUp()
 	end
 end
 
-function checkWalls()
+function checkWalls(force)
+	force = force or false
+
 	for i=1,3 do
 		if isValuable() then
 			if isChest() then
@@ -103,7 +113,7 @@ function checkWalls()
 			t.select(1)
 			t.digAll()
 		end
-		placeJunk()
+		placeJunk(force)
 		t.rt()
 	end
 	if isValuable() then
@@ -113,7 +123,7 @@ function checkWalls()
 		t.select(1)
 		t.digAll()
 	end
-	placeJunk()
+	placeJunk(force)
 end
 
 function drillDown(dp)
@@ -159,7 +169,7 @@ function mine()
 	digDown()
 	depth = depth + 1
 
-	checkWalls()
+	checkWalls(true)
 	t.downAttack()
 	t.select(1)
 	digDown()
@@ -200,7 +210,7 @@ function mine()
 	-- dig up -- hole 2
 	depth = drillUp(depth)
 
-	checkWalls()
+	checkWalls(true)
 
 	-- place cap
 	t.select(1)
@@ -213,55 +223,55 @@ function mine()
 	-- clear path for player
 	t.select(1)
 	t.digAllUp()
-	t.placeDown(2)
+	t.placeDown(COBBLE)
 
 	for i=1,2 do
 		t.rt()
 		t.fdDigAttack()
 		t.digAllUp()
-		t.placeDown(2)
+		t.placeDown(COBBLE)
 	end
 
 	t.fdDigAttack()
 	t.digAllUp()
-	t.placeDown(2)
+	t.placeDown(COBBLE)
 
 	for i=1,2 do
 		t.rt()
 		t.fdDigAttack()
 		t.digAllUp()
-		t.placeDown(2)
+		t.placeDown(COBBLE)
 	end
 
 	t.fdDigAttack()
 	t.digAllUp()
-	t.placeDown(2)
+	t.placeDown(COBBLE)
 end
 
 function next()
 	-- go to next place
 	t.select(1)
 	t.digAllUp()
-	t.placeDown(2)
+	t.placeDown(COBBLE)
 	t.lt()
 	t.fdDigAttack()
 
 	for i=1,2 do
 		t.digAllUp()
-		t.placeDown(2)
+		t.placeDown(COBBLE)
 		t.rt()
 		t.fdDigAttack()
 	end
 
 	for i=1,2 do
 		t.digAllUp()
-		t.placeDown(2)
+		t.placeDown(COBBLE)
 		t.lt()
 		t.fdDigAttack()
 	end
 
 	t.digAllUp()
-	t.placeDown(2)
+	t.placeDown(COBBLE)
 	t.rt()
 end
 

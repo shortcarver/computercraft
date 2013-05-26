@@ -1,0 +1,39 @@
+-- stores ttl data for blocks.
+-- each time a block is checked, the TTL is decremented.
+-- once it hits zero, it is removed
+-- when a block is added, the TTL is incremented.
+
+local map = nil
+
+function init()
+	map = blocktable.new()
+end
+
+
+function exists(x, y, z)
+	local ttl = map:get(x, y, z)
+
+	if ttl ~= nil then
+		ttl = ttl - 1
+		if ttl == 0 then
+			map:remove(x, y, z)
+		else
+			map:set(x, y, z, ttl)
+		end
+
+		return true
+	end
+
+	return false
+end
+
+
+function add(x, y, z)
+	local ttl = map:get(x, y, z) or 0
+
+	ttl = ttl + 5
+
+	map:set(x, y, z, ttl)
+end
+
+

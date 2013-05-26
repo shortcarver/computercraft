@@ -1,0 +1,192 @@
+--[[
+..uuuu...........................................
+.u0<<<u..........................................
+.u^<<u...........................................
+..uu.............xxxx............................
+.................xxxx............................
+.................xxxx............................
+.................xxxx............................
+.................................................
+.......................................f.........
+.................................................
+.................................................
+.................................................
+]]--
+
+
+
+function recalcMoves(data, point)
+	local minm = -1
+	local testp = {
+			data.path:get(point.x+1,point.y,point.z),
+			data.path:get(point.x-1,point.y,point.z),
+			data.path:get(point.x,point.y+1,point.z),
+			data.path:get(point.x,point.y-1,point.z),
+			data.path:get(point.x,point.y,point.z+1),
+			data.path:get(point.x,point.y,point.z-1)
+		}
+	for k,p in pairs(testp) do
+		if p ~= nil then 
+			vt.reset()
+			vt.setLoc(p.h,p.x,p.y,p.z)
+			vt.goto(point.x,point.y,point.z)
+
+			local m = vt.getMoves() + p.m
+			
+			if minm == -1 or m < minm then
+				point.m = m
+				point.h = vt.getHeading()
+				point.p = p
+				minm = m
+			end
+		end
+	end
+end
+
+function findUnknowns(data, s)
+	-- add nodes to the unknowns table around the current node
+
+	local testp = {
+			{x=s.x+1,y=s.y,z=s.z},
+			{x=s.x-1,y=s.y,z=s.z},
+			{x=s.x,y=s.y+1,z=s.z},
+			{x=s.x,y=s.y-1,z=s.z},
+			{x=s.x,y=s.y,z=s.z+1},
+			{x=s.x,y=s.y,z=s.z-1}
+		}
+	for k,p in pairs(testp) do
+		local skip = false
+
+		if data.path:exists(p.x,p.y,p.z) then
+			skip = true
+			log("path skip")
+		end
+
+		if data.unknowns:exists(p.x,p.y,p.z) then
+			skip = true
+			log("unknowns skip")
+		end
+
+		if data.scanned:exists(p.x,p.y,p.z) then
+			skip = true
+			log("scanned skip")
+		elseif blockmap.exists(p.x,p.y,p.z) then
+			data.scanned:set(p.x,p.y,p.z,true)
+			skip = true
+			log("blockmap skip")
+		end
+
+		if not skip then
+			local f = data.finish
+			vt.reset()
+			vt.setLoc(s.h,s.x,s.y,s.z)
+			vt.goto(p.x,p.y,p.z)
+			vt.goto(f.x,f.y,f.z)
+			local m = vt.getMoves()
+			local np = {
+				x=p.x,
+				y=p.y,
+				z=p.z,
+				h=-1,
+				m=m,
+				p=nil}
+			log(np)
+			data.unknowns:set(p.x,p.y,p.z,np)
+		end
+	end
+end
+
+function getBestUnknown(data)
+	local finish = data.finish
+	local minp = nil
+	local minm = -1
+	for k,v in pairs(data.unknowns.map) do
+		if (minm == -1 or v.m < minm) then
+			minp = v
+			minm = v.m
+		end
+
+		if v.m == 1 then
+			break
+		end
+	end
+
+	if minp ~= nil then
+		data.unknowns:remove(minp.x,minp.y,minp.z)
+	end
+
+	return minp
+end
+
+function findPath(x1,y1,z1,x2,y2,z2)
+	local data = {}
+	data.path = blocktable.new()
+	data.unknowns = blocktable.new()
+	data.scanned = blocktable.new()
+	data.start = {}
+	data.finish = {}
+	data.current = {}
+
+	data.current = {x=x1,y=y1,z=z1,h=t.getHeading(),m=0,p=nil}
+	data.start = data.current
+	data.finish = {x=x2,y=y2,z=z2}
+	data.path:set(x1, y1, z1, data.start)
+
+	local test = data.current
+	local f = data.finish
+	while test.x ~= f.x or 
+		test.y ~= f.y or 
+		test.z ~= f.z do
+		log("current")
+		log(test)
+
+		log("unknowns")
+		findUnknowns(data, test)
+
+		test = getBestUnknown(data)
+		log("best unknown")
+		log(test)
+		recalcMoves(data, test)
+		log("recalc")
+		log(test)
+		data.path:set(test.x,test.y,test.z,test)
+	end
+
+	-- build list
+	data.current = test
+
+	local list = {}
+	generateList(list, data.current)
+
+	log("list")
+	log(list)
+
+	for k,v in pairs(list) do
+		log(v.x..","..v.y..","..v.z)
+	end
+
+
+	return list
+end
+
+function generateList(list, node)
+	if node == nil then
+		return
+	end
+	generateList(list, node.p)
+
+	node.p = nil
+
+	table.insert(list, node)
+end
+
+local f = nil
+
+function log(data)
+	if f == nil then
+		f,err = fs.open("/log.txt", "a")
+	end
+	print(textutils.serialize(data))
+	f.write(textutils.serialize(data) .. "\n")
+	f.flush()
+end
