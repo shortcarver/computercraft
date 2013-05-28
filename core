@@ -46,7 +46,7 @@ end
 function placeJunkDn(force)
 	force = force or false
 
-	if t.getItemCount(COBBLE) > 20 or force then
+	if t.getItemCount(COBBLE) > 12 or force then
 		t.placeDown(COBBLE)
 	end
 end
@@ -56,7 +56,7 @@ function placeJunk(force)
 
 	if t.getItemCount(DIRT) > 1 then
 		t.place(DIRT)
-	elseif t.getItemCount(COBBLE) > 20 or force then
+	elseif t.getItemCount(COBBLE) > 12 or force then
 		t.place(COBBLE)
 	end
 end

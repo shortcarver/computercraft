@@ -7,6 +7,29 @@ local map = nil
 
 function init()
 	map = blocktable.new()
+
+	map.map = load()
+end
+
+function load()
+	if not fs.exists("/blocks.map") then
+		return {}
+	end
+
+	local f, err = fs.open("/blocks.map", "r")
+
+	local data = f.readLine()
+
+	f.close()
+
+	return textutils.unserialize(data)
+end
+
+function save(map)
+	local f,err = fs.open("/block.map", "w")
+	f.write(textutils.serialize(map.map))
+	f.flush()
+	f.close()
 end
 
 
@@ -21,6 +44,8 @@ function exists(x, y, z)
 			map:set(x, y, z, ttl)
 		end
 
+		save(map)
+
 		return true
 	end
 
@@ -34,6 +59,8 @@ function add(x, y, z)
 	ttl = ttl + 5
 
 	map:set(x, y, z, ttl)
+
+	save(map)
 end
 
 

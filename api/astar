@@ -118,7 +118,12 @@ function getBestUnknown(data)
 	return minp
 end
 
+local file = nil
+
 function findPath(x1,y1,z1,x2,y2,z2)
+	file,err = fs.open("/log.txt", "w")
+
+
 	local data = {}
 	data.path = blocktable.new()
 	data.unknowns = blocktable.new()
@@ -165,6 +170,7 @@ function findPath(x1,y1,z1,x2,y2,z2)
 		log(v.x..","..v.y..","..v.z)
 	end
 
+	file.close()
 
 	return list
 end
@@ -180,13 +186,8 @@ function generateList(list, node)
 	table.insert(list, node)
 end
 
-local f = nil
-
 function log(data)
-	if f == nil then
-		f,err = fs.open("/log.txt", "a")
-	end
 	print(textutils.serialize(data))
-	f.write(textutils.serialize(data) .. "\n")
-	f.flush()
+	file.write(textutils.serialize(data) .. "\n")
+	file.flush()
 end
