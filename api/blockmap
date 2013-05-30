@@ -6,6 +6,10 @@
 local map = nil
 
 function init()
+	if map ~= nil then
+		return
+	end
+
 	map = blocktable.new()
 
 	map.map = load()
@@ -34,18 +38,10 @@ end
 
 
 function exists(x, y, z)
+	init()
 	local ttl = map:get(x, y, z)
 
 	if ttl ~= nil then
-		ttl = ttl - 1
-		if ttl == 0 then
-			map:remove(x, y, z)
-		else
-			map:set(x, y, z, ttl)
-		end
-
-		save(map)
-
 		return true
 	end
 
@@ -54,11 +50,9 @@ end
 
 
 function add(x, y, z)
-	local ttl = map:get(x, y, z) or 0
+	init()
 
-	ttl = ttl + 5
-
-	map:set(x, y, z, ttl)
+	map:set(x, y, z, 0)
 
 	save(map)
 end

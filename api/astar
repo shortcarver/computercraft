@@ -59,21 +59,17 @@ function findUnknowns(data, s)
 
 		if data.path:exists(p.x,p.y,p.z) then
 			skip = true
-			log("path skip")
 		end
 
 		if data.unknowns:exists(p.x,p.y,p.z) then
 			skip = true
-			log("unknowns skip")
 		end
 
 		if data.scanned:exists(p.x,p.y,p.z) then
 			skip = true
-			log("scanned skip")
 		elseif blockmap.exists(p.x,p.y,p.z) then
 			data.scanned:set(p.x,p.y,p.z,true)
 			skip = true
-			log("blockmap skip")
 		end
 
 		if not skip then
@@ -90,7 +86,6 @@ function findUnknowns(data, s)
 				h=-1,
 				m=m,
 				p=nil}
-			log(np)
 			data.unknowns:set(p.x,p.y,p.z,np)
 		end
 	end
@@ -101,6 +96,11 @@ function getBestUnknown(data)
 	local minp = nil
 	local minm = -1
 	for k,v in pairs(data.unknowns.map) do
+		-- vt.reset()
+		-- vt.setLoc(t.getLoc())
+		-- vt.goto(v.x,v.y,v.z)
+
+		-- local m = v.m + vt.getMoves()
 		if (minm == -1 or v.m < minm) then
 			minp = v
 			minm = v.m
@@ -118,12 +118,7 @@ function getBestUnknown(data)
 	return minp
 end
 
-local file = nil
-
-function findPath(x1,y1,z1,x2,y2,z2)
-	file,err = fs.open("/log.txt", "w")
-
-
+function findPath(x,y,z)
 	local data = {}
 	data.path = blocktable.new()
 	data.unknowns = blocktable.new()
@@ -132,9 +127,11 @@ function findPath(x1,y1,z1,x2,y2,z2)
 	data.finish = {}
 	data.current = {}
 
-	data.current = {x=x1,y=y1,z=z1,h=t.getHeading(),m=0,p=nil}
+	local h,x1,y1,z1 = t.getLoc()
+
+	data.current = {x=x1,y=y1,z=z1,h=h,m=0,p=nil}
 	data.start = data.current
-	data.finish = {x=x2,y=y2,z=z2}
+	data.finish = {x=x,y=y,z=z}
 	data.path:set(x1, y1, z1, data.start)
 
 	local test = data.current
@@ -142,18 +139,11 @@ function findPath(x1,y1,z1,x2,y2,z2)
 	while test.x ~= f.x or 
 		test.y ~= f.y or 
 		test.z ~= f.z do
-		log("current")
-		log(test)
 
-		log("unknowns")
 		findUnknowns(data, test)
 
 		test = getBestUnknown(data)
-		log("best unknown")
-		log(test)
 		recalcMoves(data, test)
-		log("recalc")
-		log(test)
 		data.path:set(test.x,test.y,test.z,test)
 	end
 
@@ -162,15 +152,6 @@ function findPath(x1,y1,z1,x2,y2,z2)
 
 	local list = {}
 	generateList(list, data.current)
-
-	log("list")
-	log(list)
-
-	for k,v in pairs(list) do
-		log(v.x..","..v.y..","..v.z)
-	end
-
-	file.close()
 
 	return list
 end
@@ -186,8 +167,3 @@ function generateList(list, node)
 	table.insert(list, node)
 end
 
-function log(data)
-	print(textutils.serialize(data))
-	file.write(textutils.serialize(data) .. "\n")
-	file.flush()
-end

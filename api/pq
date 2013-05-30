@@ -4,6 +4,12 @@
 function create(max)
 	local q = {}
 
+	q.size = size
+	q.pop = pop
+	q.put = put
+	q.contains = contains
+	q.containsKey = containsKey
+
 	q.heap = {}
 	q.count = 0
 
@@ -120,6 +126,6 @@ function _minHeapify(q, index)
 		q.heap[index] = q.heap[small]
 		q.heap[small] = swap
 
-		_maxHeapify(q, small)
+		_minHeapify(q, small)
 	end
 end

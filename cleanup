@@ -222,9 +222,15 @@ end
 function cleanup()
 	t.setLoc(0,0,0,0)
 
-	t.fdDigAttack()
+	setScanned(0,0,-1)
+	setScanned(0,0,-2)
 
 	scan()
+
+	while isEmpty() do
+		t.upDigAttack()
+		scan()
+	end
 
 	while not isEmpty() do
 		local key = findNearestPoint()

@@ -195,6 +195,10 @@ function placeDown(i)
 	return _place(turtle.placeDown, i)
 end
 
+function placeDn(i)
+	return _place(turtle.placeDown, i)
+end
+
 function attack()
 	return turtle.attack()
 end
@@ -204,6 +208,10 @@ function attackUp()
 end
 
 function attackDown()
+	return turtle.attackDown()
+end
+
+function attackDn()
 	return turtle.attackDown()
 end
 
@@ -428,6 +436,10 @@ function digDown()
 	return turtle.digDown()
 end
 
+function digDn()
+	return turtle.digDown()
+end
+
 -- dig chests --
 function _digChest(fnSuck, fnDig)
 	while fnSuck() do
@@ -443,6 +455,10 @@ end
 
 
 function digChestDown()
+	_digChest(turtle.suckDown, digDown)
+end
+
+function digChestDn()
 	_digChest(turtle.suckDown, digDown)
 end
 
@@ -498,17 +514,13 @@ function countInventory(s,f)
 end
 
 function compactInventory(s,f)
-	if s == nil then
-		s = 1
-	end
-	if f == nil then
-		f = 16
-	end
+	s = s or 1
+	f = f or 16
 
 	local sel = _sel
 
 	-- try to compact contents
-	for i=s,15 do
+	for i=s,f-1 do
 		for j=f,i+1,-1 do
 			if turtle.getItemCount(j) > 0 then
 				select(j)
@@ -524,31 +536,37 @@ end
 -- advanced movement -- 
 
 -- move/attack commands --
-function _mvAttack(mvfn, dfn, atckfn)
-	while not mvfn() and not dfn() do
-		atckfn()
+function _mvAttack(fnMv, fnD, fnAttack)
+	if fnD() then
+		return false
+	end
+
+	while not fnMv() and not fnD() do
+		fnAttack()
 		os.sleep(ATTACK_TIME)
 	end
+
+	return true
 end
 
 function upAttack()
-	_mvAttack(up, detectUp, turtle.attackUp)
+	return _mvAttack(up, detectUp, turtle.attackUp)
 end
 
 function downAttack()
-	_mvAttack(down, detectDown, turtle.attackDown)
+	return _mvAttack(down, detectDown, turtle.attackDown)
 end
 
 function forwardAttack()
-	_mvAttack(forward, detect, turtle.attack)
+	return _mvAttack(forward, detect, turtle.attack)
 end
 
 function dnAttack()
-	_mvAttack(down, detectDown, turtle.attackDown)
+	return _mvAttack(down, detectDown, turtle.attackDown)
 end
 
 function fdAttack()
-	_mvAttack(forward, detect, turtle.attack)
+	return _mvAttack(forward, detect, turtle.attack)
 end
 
 -- move, dig/attack --
@@ -575,23 +593,23 @@ function _mvDigAttack(fnMv, fnDetect, fnDig, fnAttack, count)
 end
 
 function upDigAttack(count)
-	_mvDigAttack(up, detectUp, turtle.digUp, turtle.attackUp,count)
+	return _mvDigAttack(up, detectUp, turtle.digUp, turtle.attackUp,count)
 end
 
 function forwardDigAttack(count)
-	_mvDigAttack(forward, detect, turtle.dig, turtle.attack,count)
+	return _mvDigAttack(forward, detect, turtle.dig, turtle.attack,count)
 end
 
 function downDigAttack(count)
-	_mvDigAttack(down, detectDown, digDown, turtle.attackDown,count)
+	return _mvDigAttack(down, detectDown, digDown, turtle.attackDown,count)
 end
 
 function fdDigAttack(count)
-	_mvDigAttack(forward, detect, turtle.dig, turtle.attack,count)
+	return _mvDigAttack(forward, detect, turtle.dig, turtle.attack,count)
 end
 
 function dnDigAttack(count)
-	_mvDigAttack(down, detectDown, digDown, turtle.attackDown,count)
+	return _mvDigAttack(down, detectDown, digDown, turtle.attackDown,count)
 end
 
 -- move/dig --
@@ -608,6 +626,10 @@ function forwardDig()
 	_mvDig(detect, dig, forward)
 end
 
+function fdDig()
+	_mvDig(detect, dig, forward)
+end
+
 function upDig()
 	_mvDig(detectUp, digUp, up)
 end
@@ -616,33 +638,44 @@ function downDig()
 	_mvDig(detectDown, digDown, down)
 end
 
+function dnDig()
+	_mvDig(detectDown, digDown, down)
+end
 
 --replaces the item in the world with the item in slot i
 function _replace(fnCompare, fnDetect, fnDig, fnPlace, i)
 	select(i)
 	if not fnCompare() or not fnDetect() then
 		fnDig()
-		fnPlace()
+
+		if fnPlace() then
+			return true
+		end
 	end
+
+	return false
 end
 
 function replace(i)
-	_replace(compare, detect, digAll, turtle.place, i)
+	return _replace(compare, detect, digAll, turtle.place, i)
 end	
 	
 function replaceUp(i)
-	_replace(compareUp, detectUp, digAllUp, turtle.placeUp, i)
+	return _replace(compareUp, detectUp, digAllUp, turtle.placeUp, i)
 end	
 	
 function replaceDown(i)
-	_replace(compareDown, detectDown, digDown, turtle.placeDown, i)
+	return _replace(compareDown, detectDown, digDown, turtle.placeDown, i)
 end	
 
+function replaceDn(i)
+	return _replace(compareDown, detectDown, digDown, turtle.placeDown, i)
+end	
 
 
 -- coordinate based movement --
 
-function moveToX(x)
+function _moveToX(fnFd, x)
 	if _tx > x then
 		turnHeading(XNEG)
 	elseif _tx < x then
@@ -650,11 +683,15 @@ function moveToX(x)
 	end
 
 	while _tx ~= x do
-		forwardDigAttack()
+		if not fnFd() then
+			return false
+		end
 	end
+
+	return true
 end
 
-function moveToZ(z)
+function _moveToZ(fnFd, z)
 	if _tz > z then
 		turnHeading(ZNEG)
 	elseif _tz < z then
@@ -662,36 +699,128 @@ function moveToZ(z)
 	end
 
 	while _tz ~= z do
-		forwardDigAttack()
+		if not fnFd() then
+			return false
+		end
 	end
+
+	return true
 end
 
-function moveToY(y)
+function _moveToY(fnUp, fnDn, y)
 	while y > _ty do
-		upDigAttack()
+		if not fnUp() then
+			return false
+		end
 	end
 
 	while y < _ty do
-		downDigAttack()
+		if not fnDn() then
+			return false
+		end
 	end
+	return true
 end
 
+function moveToX(x)
+	return _moveToX(forwardDigAttack, x)
+end
 
-function goto(x,y,z)
+function moveToZ(z)
+	return _moveToZ(forwardDigAttack, z)
+end
+
+function moveToY(y)
+	return _moveToY(upDigAttack, downDigAttack, y)
+end
+
+function _goto(fnUp, fnDn, fnFd, x,y,z)
 	if _ty < y then
-		moveToY(y)
+		if not _moveToY(fnUp, fnDn, y) then
+			return false
+		end
 	end
 
 	if math.abs(_tx - x) < math.abs(_tz - z) then
-		moveToX(x)
-		moveToZ(z)
+		if not _moveToX(fnFd, x) then
+			return false
+		end
+		if not _moveToZ(fnFd, z) then
+			return false
+		end
 	else
-		moveToZ(z)
-		moveToX(x)
+		if not _moveToZ(fnFd, z) then
+			return false
+		end
+		if not _moveToX(fnFd, x) then
+			return false
+		end
 	end
 
 	if _ty > y then
-		moveToY(y)
+		if not _moveToY(fnUp, fnDn, y) then
+			return false
+		end
+	end
+
+	return true
+end
+
+function goto(x,y,z)
+	return _goto(upDigAttack, dnDigAttack, fdDigAttack, x, y, z)
+end
+
+function gotoDigAttack(x,y,z)
+	return _goto(upDigAttack, dnDigAttack, fdDigAttack, x, y, z)
+end
+
+function gotoAttack(x,y,z)
+	return _goto(upAttack, dnAttack, fdAttack, x, y, z)
+end
+
+local function naviscan()
+	if t.detectUp() then
+		blockmap.add(t.getLocUp())
+	end
+	if t.detectDn() then
+		blockmap.add(t.getLocDn())
+	end
+	for i=1,3 do
+		if t.detect() then
+			blockmap.add(t.getLocFd())
+		end
+		t.rt()
+	end
+	if t.detect() then
+		blockmap.add(t.getLocFd())
 	end
 end
 
+function gotoAttackNavi(x,y,z)
+	local h,cx,cy,cz = t.getLoc()
+
+	while cx ~= x or cy ~= y or cz ~= z do
+		local path = astar.findPath(x,y,z)
+
+		for k,v in pairs(path) do
+			if t.detect() then
+				blockmap.add(t.getLocFd())
+			end
+			if t.detectUp() then
+				blockmap.add(t.getLocUp())
+			end
+			if t.detectDn() then
+				blockmap.add(t.getLocDn())
+			end
+
+			if not t.gotoAttack(v.x,v.y,v.z) then
+				print("goto failed")
+				print(v.x..","..v.y..","..v.z)
+				naviscan()
+				break
+			end
+		end
+
+		h, cx, cy, cz = t.getLoc()
+	end
+end
