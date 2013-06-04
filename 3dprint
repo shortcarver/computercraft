@@ -1,0 +1,62 @@
+function split(self, sSeparator, nMax, bRegexp)
+	assert(sSeparator ~= '')
+	assert(nMax == nil or nMax >= 1)
+
+	local aRecord = {}
+
+	if self:len() > 0 then
+		local bPlain = not bRegexp
+		nMax = nMax or -1
+
+		local nField=1 nStart=1
+		local nFirst,nLast = self:find(sSeparator, nStart, bPlain)
+		while nFirst and nMax ~= 0 do
+			aRecord[nField] = self:sub(nStart, nFirst-1)
+			nField = nField+1
+			nStart = nLast+1
+			nFirst,nLast = self:find(sSeparator, nStart, bPlain)
+			nMax = nMax-1
+		end
+		aRecord[nField] = self:sub(nStart)
+	end
+
+	return aRecord
+end
+
+
+function placeItem()
+	for i=1,16 do
+		if t.getItemCount(i) > 0 then
+			t.select(i)
+			t.placeDown(i)
+			return true
+		end
+	end
+end
+
+file = fs.open("/blocks.map", "r")
+data = textutils.unserialize(file.readLine())
+file.close()
+
+q = pq.create(false)
+
+for k,v in pairs(data) do
+	print(k)
+	vs = split(k, ",")
+	p = {}
+	print( vs[1])
+	p.x = tonumber(vs[1])
+	p.y = tonumber(vs[2])
+	p.z = tonumber(vs[3])
+	q:put(p,p.y)
+end
+
+while q:size() > 0 do
+	p = q:pop()
+
+	t.goto(p.x,p.y+1,p.z)
+	placeItem()
+
+end
+
+

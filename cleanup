@@ -132,7 +132,7 @@ function scan()
 		end
 	end
 
-	t.setHeading(h)
+	-- t.setHeading(h)
 end
 
 function dumpInventory()

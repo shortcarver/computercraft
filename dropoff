@@ -1,0 +1,86 @@
+-- 1 = fuel
+-- 2,3,4 = smelting
+-- 5,6,7,8 = block
+-- 9+ = dropoff
+
+
+local args = { ... }
+
+local sh = tonumber(args[1])
+local sx = tonumber(args[2])
+local sy = tonumber(args[3])
+local sz = tonumber(args[4])
+
+function goto(loc)
+	t.gotoAttackNavi(loc.x,loc.y,loc.z)
+	t.setHeading(loc.h)
+end
+
+function check(s,f)
+	for i=s,f do
+		if t.getItemCount(i) > 0 then
+			return true
+		end
+	end
+	return false
+end
+
+function dropDn(s,f)
+	for i=s,f do
+		if t.getItemCount(i) > 0 then
+			t.select(i)
+			t.dropDn(t.getItemCount(i))
+		end
+	end
+end
+	
+
+t.setLoc(sh,sx,sy,sz)
+
+-- smelting check
+local deliver = check(2,4)
+
+if deliver then
+	goto(places.dropoff.smelting)
+	dropDn(2,4)
+end
+
+deliver = check(5,8)
+
+if deliver then
+	goto(places.dropoff.blockmaker)
+	dropDn(5,8)
+end
+
+deliver = check(9,16)
+
+if deliver then
+	goto(places.dropoff.sorter)
+	dropDn(9,16)
+end
+
+if t.getItemCount(1) > 32 then
+	goto(places.dropoff.coal)
+	t.select(1)
+	t.dropDn(t.getItemCount(1) - 32)
+else
+	goto(places.pickup.coal)
+	t.select(1)
+	while turtle.suck() and t.getItemCount(1) < 32 do
+	end
+end
+
+if t.getItemCount(1) > 32 then
+	t.select(1)
+	t.drop(t.getItemCount(1) - 32)
+end
+
+for i=2,16 do
+	if t.getItemCount(i) > 0 then
+		t.select(i)
+		t.drop()
+	end
+end
+
+t.gotoAttackNavi(sx,sy,sz)
+t.setHeading(sh)

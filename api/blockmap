@@ -29,8 +29,8 @@ function load()
 	return textutils.unserialize(data)
 end
 
-function save(map)
-	local f,err = fs.open("/block.map", "w")
+function save()
+	local f,err = fs.open("/blocks.map", "w")
 	f.write(textutils.serialize(map.map))
 	f.flush()
 	f.close()
@@ -52,9 +52,10 @@ end
 function add(x, y, z)
 	init()
 
-	map:set(x, y, z, 0)
-
-	save(map)
+	if not exists(x,y,z) then
+		map:set(x, y, z, 0)
+		save()
+	end
 end
 
 

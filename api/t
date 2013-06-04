@@ -239,6 +239,22 @@ function dropDn(i)
 	return dropDown(i)
 end
 
+function suck()
+	return turtle.suck()
+end
+
+function suckUp()
+	return turtle.suckUp()
+end
+
+function suckDown()
+	return turtle.suckDown()
+end
+
+function suckDn()
+	return turtle.suckDown()
+end
+
 -- basic movement functions --
 function setMinFuelLevel(level)
 	_minLevel = level
@@ -778,21 +794,49 @@ function gotoAttack(x,y,z)
 	return _goto(upAttack, dnAttack, fdAttack, x, y, z)
 end
 
+
+local function miniCompact()
+	local i = 16
+	while turtle.getItemCount(1) < 10 and i > 1 do
+		if turtle.getItemCount(i) > 0 then
+			t.select(i)
+			turtle.transferTo(1)
+		end
+		i = i - 1
+	end
+
+	t.select(1)
+end
+
+
+--[[local function naviPlace(fnCompare, fnPlace)
+
+	miniCompact()
+
+	if not fnCompare(1) then
+		fnPlace(1)
+	end
+end]]--
+
 local function naviscan()
 	if t.detectUp() then
 		blockmap.add(t.getLocUp())
+		--naviPlace(t.compareUp, t.replaceUp)
 	end
 	if t.detectDn() then
 		blockmap.add(t.getLocDn())
+		--naviPlace(t.compareDn, t.replaceDn)
 	end
 	for i=1,3 do
 		if t.detect() then
 			blockmap.add(t.getLocFd())
+			--naviPlace(t.compare, t.replace)
 		end
 		t.rt()
 	end
 	if t.detect() then
 		blockmap.add(t.getLocFd())
+		--naviPlace(t.compare, t.replace)
 	end
 end
 
@@ -805,12 +849,15 @@ function gotoAttackNavi(x,y,z)
 		for k,v in pairs(path) do
 			if t.detect() then
 				blockmap.add(t.getLocFd())
+				--naviPlace(t.compare, t.replace)
 			end
 			if t.detectUp() then
 				blockmap.add(t.getLocUp())
+				--naviPlace(t.compareUp, t.replaceUp)
 			end
 			if t.detectDn() then
 				blockmap.add(t.getLocDn())
+				--naviPlace(t.compareDn, t.replaceDn)
 			end
 
 			if not t.gotoAttack(v.x,v.y,v.z) then

@@ -36,7 +36,7 @@ function recalcMoves(data, point)
 			if minm == -1 or m < minm then
 				point.m = m
 				point.h = vt.getHeading()
-				point.p = p
+				point.p = {x=p.x,y=p.y,z=p.z}
 				minm = m
 			end
 		end
@@ -45,6 +45,7 @@ end
 
 function findUnknowns(data, s)
 	-- add nodes to the unknowns table around the current node
+	local f = data.finish
 
 	local testp = {
 			{x=s.x+1,y=s.y,z=s.z},
@@ -65,20 +66,17 @@ function findUnknowns(data, s)
 			skip = true
 		end
 
-		if data.scanned:exists(p.x,p.y,p.z) then
-			skip = true
-		elseif blockmap.exists(p.x,p.y,p.z) then
-			data.scanned:set(p.x,p.y,p.z,true)
+		if blockmap.exists(p.x,p.y,p.z) then
 			skip = true
 		end
 
 		if not skip then
-			local f = data.finish
 			vt.reset()
 			vt.setLoc(s.h,s.x,s.y,s.z)
 			vt.goto(p.x,p.y,p.z)
 			vt.goto(f.x,f.y,f.z)
-			local m = vt.getMoves()
+
+			local m = vt.getMoves() + s.m
 			local np = {
 				x=p.x,
 				y=p.y,
@@ -87,42 +85,30 @@ function findUnknowns(data, s)
 				m=m,
 				p=nil}
 			data.unknowns:set(p.x,p.y,p.z,np)
+
+			data.uq:put(np,np.m)
 		end
 	end
 end
 
 function getBestUnknown(data)
-	local finish = data.finish
-	local minp = nil
-	local minm = -1
-	for k,v in pairs(data.unknowns.map) do
-		-- vt.reset()
-		-- vt.setLoc(t.getLoc())
-		-- vt.goto(v.x,v.y,v.z)
+	
+	local p = data.uq:pop()
 
-		-- local m = v.m + vt.getMoves()
-		if (minm == -1 or v.m < minm) then
-			minp = v
-			minm = v.m
-		end
-
-		if v.m == 1 then
-			break
-		end
+	if p ~= nil then
+		data.unknowns:remove(p.x,p.y,p.z)
 	end
 
-	if minp ~= nil then
-		data.unknowns:remove(minp.x,minp.y,minp.z)
-	end
-
-	return minp
+	return p
 end
 
 function findPath(x,y,z)
+	print("init data structures")
+
 	local data = {}
 	data.path = blocktable.new()
 	data.unknowns = blocktable.new()
-	data.scanned = blocktable.new()
+	data.uq = pq.create(false)
 	data.start = {}
 	data.finish = {}
 	data.current = {}
@@ -136,6 +122,8 @@ function findPath(x,y,z)
 
 	local test = data.current
 	local f = data.finish
+	print("building graph")
+	local count = 0
 	while test.x ~= f.x or 
 		test.y ~= f.y or 
 		test.z ~= f.z do
@@ -145,25 +133,38 @@ function findPath(x,y,z)
 		test = getBestUnknown(data)
 		recalcMoves(data, test)
 		data.path:set(test.x,test.y,test.z,test)
+
+		count = count + 1
+		if count % 1000 == 0 then
+			print("Built " .. count .. " points.")
+			os.sleep(0.5)
+		end
 	end
+	print("Built " .. count .. " points.")
 
 	-- build list
 	data.current = test
 
+	print("generating path")
 	local list = {}
-	generateList(list, data.current)
-
+	generateList(data.path, list, data.current)
+	print("done!")
 	return list
 end
 
-function generateList(list, node)
+function generateList(path, list, node)
 	if node == nil then
 		return
 	end
-	generateList(list, node.p)
 
-	node.p = nil
-
-	table.insert(list, node)
+	while node ~= nil do
+		table.insert(list,1, node)
+		local p = node.p
+		if p ~= nil then
+			node = path:get(p.x,p.y,p.z)
+		else
+			node = nil
+		end
+	end
 end
 

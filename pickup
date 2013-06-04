@@ -1,0 +1,65 @@
+local args = { ... }
+
+local sh = tonumber(args[1])
+local sx = tonumber(args[2])
+local sy = tonumber(args[3])
+local sz = tonumber(args[4])
+
+local item = places.pickup[args[5]]
+local itemcount = tonumber(args[6]) or 64
+if args[6] == "fill" then
+	itemcount = 2000
+end
+
+function goto(loc)
+	t.gotoAttackNavi(loc.x,loc.y,loc.z)
+	t.setHeading(loc.h)
+end
+
+function payload()
+	local count = 0
+	for i=2,16 do
+		count = count + t.getItemCount(i)
+	end
+	return count
+end
+
+
+function fill(loc, count)
+	t.select(1)
+	while t[loc.suckfn]() and payload() < count do
+	end
+end
+
+-- count is the number to drop
+function dropExtra(loc, count)
+	for i=16,2,-1 do
+		local ic = t.getItemCount(i)
+		if ic > 0 then
+			if ic > count then
+				t.select(i)
+				t[loc.dropfn](count)
+				return
+			else
+				t.select(i)
+				t[loc.dropfn]()
+				count = count - ic
+			end
+		end
+	end
+end
+
+t.setLoc(sh,sx,sy,sz)
+
+print("goto")
+print(item.x..","..item.y..","..item.z)
+goto(item)
+print("fill")
+fill(item, itemcount)
+if payload() > itemcount then
+	print("dropextra")
+	dropExtra(item, payload() - itemcount)
+end
+
+t.gotoAttackNavi(sx,sy,sz)
+t.setHeading(sh)

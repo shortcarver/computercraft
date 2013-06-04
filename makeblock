@@ -68,7 +68,9 @@ function buildBlocks()
 	turtle.transferTo(11,step)
 
 	turtle.craft()
-	turtle.drop()
+
+	while turtle.drop() do
+	end
 end
 
 
