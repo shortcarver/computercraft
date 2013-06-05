@@ -51,6 +51,30 @@ end
 
 t.setLoc(sh,sx,sy,sz)
 
+if t.getItemCount(1) > 32 then
+	goto(places.dropoff.coal)
+	t.select(1)
+	t.dropDn(t.getItemCount(1) - 32)
+else
+	goto(places.pickup.coal)
+	t.select(1)
+	while turtle.suck() and t.getItemCount(1) < 32 do
+	end
+end
+
+if t.getItemCount(1) > 32 then
+	t.select(1)
+	t.drop(t.getItemCount(1) - 32)
+end
+
+for i=2,16 do
+	if t.getItemCount(i) > 0 then
+		t.select(i)
+		t.drop()
+	end
+end
+
+
 print("goto")
 print(item.x..","..item.y..","..item.z)
 goto(item)
