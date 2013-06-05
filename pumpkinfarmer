@@ -1,0 +1,22 @@
+t.select(1)
+
+while true do
+
+	if t.compare(1) then
+		t.dig()
+	end
+
+	t.rt(2)
+
+	if t.compare(1) then
+		t.dig()
+	end
+
+	t.rt(2)
+
+	local count = t.getItemCount(1)
+
+	t.dropDn(count - 1)
+
+	os.sleep(60)
+end
