@@ -71,7 +71,7 @@ function doFill()
 		fillWalls()
 	end
 
-	t.placeUp(2)
+	t.placeUp(3)
 
 	while not t.detectDown() do
 		t.downDigAttack()

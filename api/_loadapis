@@ -6,7 +6,10 @@ for n, f in ipairs(files) do
 	if string.sub(f,1,1) ~= "_" then
 		local p = "/rom/mc/api/"..f
 		if not fs.isDir(p) then
-			os.loadAPI(p)
+			while not os.loadAPI(p) do
+				print("failed to load " .. p .. " trying again in 1 sec")
+				os.sleep(1)
+			end
 		end
 	end
 end

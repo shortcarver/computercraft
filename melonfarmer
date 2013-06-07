@@ -1,18 +1,16 @@
 t.select(1)
 
 while true do
-
+	
+	for i=1,3 do
+		if t.compare(1) then
+			t.dig()
+		end
+		t.rt()
+	end
 	if t.compare(1) then
 		t.dig()
 	end
-
-	t.rt(2)
-
-	if t.compare(1) then
-		t.dig()
-	end
-
-	t.rt(2)
 
 	local count = t.getItemCount(1)
 

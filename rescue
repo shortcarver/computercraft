@@ -1,0 +1,18 @@
+t.select(1)
+
+while t.suckDn() do end
+t.digDn()
+
+local depth = 0
+
+while not t.detectDn() do
+	t.dnDigAttack()
+	while t.suckDn() do end
+	t.digDn()
+	depth = depth + 1
+end
+
+while depth > 0 do
+	t.upDigAttack()
+	depth = depth - 1
+end
