@@ -34,11 +34,11 @@ function isValuable()
 end
 
 
--- place dirt first since we use cobble for surface stuff
+-- use cobble for up/down since dirt will clog fillers
 function placeJunkUp(force)
 	force = force or false
 
-	if t.getItemCount(COBBLE) > 20 or force then
+	if t.getItemCount(COBBLE) > 40 or force then
 		t.placeUp(COBBLE)
 	end
 end
@@ -46,11 +46,12 @@ end
 function placeJunkDn(force)
 	force = force or false
 
-	if t.getItemCount(COBBLE) > 12 or force then
+	if t.getItemCount(COBBLE) > 40 or force then
 		t.placeDown(COBBLE)
 	end
 end
 
+-- place dirt first to get rid of it
 function placeJunk(force)
 	force = force or false
 

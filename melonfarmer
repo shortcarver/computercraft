@@ -1,20 +1,21 @@
 t.select(1)
 
+-- uncomment to stop the farm
+error("Farm shutdown")
+
 while true do
 	
 	for i=1,3 do
-		if t.compare(1) then
-			t.dig()
-		end
+		t.dig()
 		t.rt()
 	end
-	if t.compare(1) then
-		t.dig()
-	end
+	t.dig()
 
 	local count = t.getItemCount(1)
 
-	t.dropDn(count - 1)
+	if count > 1 then
+		t.dropDn()
+	end
 
 	os.sleep(30)
 end

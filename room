@@ -115,6 +115,7 @@ function newLineLeft(fillWall)
 end
 
 t.setLoc(0,0,0,0)
+t.select(2)
 
 pickMats()
 
