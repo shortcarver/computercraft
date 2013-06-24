@@ -22,6 +22,10 @@ local SIDE_LENGTH_INCREMENT = 2
 local valuableSwitch = 0
 
 function isValuable()
+
+	if not t.detect() then
+		return false
+	end
 	
 	if valuableSwitch == 0 then
 		valuableSwitch = 1
@@ -115,7 +119,7 @@ function isChestUp()
 end
 
 function digDown()
-	if isChestDown() then
+	if t.detectDn() and isChestDown() then
 		t.select(FUEL)
 		t.digChestDown()
 	else
@@ -125,7 +129,7 @@ function digDown()
 end
 
 function digUp()
-	if isChestUp() then
+	if t.detectUp() and isChestUp() then
 		t.select(FUEL)
 		t.digChestUp()
 	else

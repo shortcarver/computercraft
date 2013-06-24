@@ -103,7 +103,8 @@ t.select(1)
 
 local doNext
 if #args >= 1 then
-	for x=1,#args do
+	local x = 1
+	while x <= #args do
 		local val = args[x]
 
 		if val == "f" then
@@ -118,18 +119,46 @@ if #args >= 1 then
 			end
 
 			doFill()
-		end
-		
-		val = tonumber(val)
+		elseif val == "1f" then
+			local count = tonumber(args[x + 1])
 
-		if val ~= nil then
-			for i=1,val do
+			if count == nil then
+				count = 1
+			else
+				x = x + 1
+			end
+
+			for i=1,count do
 				t.fdDigAttack(2)
 				t.lt()
 				t.fdDigAttack()
 				t.rt()
+
+				if turtle.getItemCount(1) < 3 then
+					print("Not enough coal for filling. canceling")
+					break
+				end
+
+				if countMats() < 192 then
+					print("Not fill mats, canceling")
+					break
+				end
+
+				doFill()
+			end
+		else
+			val = tonumber(val)
+
+			if val ~= nil then
+				for i=1,val do
+					t.fdDigAttack(2)
+					t.lt()
+					t.fdDigAttack()
+					t.rt()
+				end
 			end
 		end
+		x = x + 1
 	end
 else
 	print ("fill usage")
