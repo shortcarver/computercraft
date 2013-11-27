@@ -1,16 +1,16 @@
 dropoff = {
-	sorter = {h=0,x=-111,y=69,z=172,dropfn="dropDn",suckfn="suckDn"},
-	blockmaker = {h=0,x=-101,y=68,z=171,dropfn="dropDn",suckfn="suckDn"},
-	smelting = {h=0,x=-100,y=71,z=171,dropfn="dropDn",suckfn="suckDn"},
-	coal = {h=0,x=-99,y=69,z=171,dropfn="dropDn",suckfn="suckDn"}
+	sorter = {h=0,x=-112,y=69,z=172,dropfn="dropDn",suckfn="suckDn"},
+	blockmaker = {h=0,x=-102,y=68,z=171,dropfn="dropDn",suckfn="suckDn"},
+	smelting = {h=0,x=-101,y=71,z=171,dropfn="dropDn",suckfn="suckDn"},
+	coal = {h=0,x=-100,y=69,z=171,dropfn="dropDn",suckfn="suckDn"}
 }
 
 pickup = {
-	cobble = {h=0,x=-101,y=70,z=171, suckfn="suck",dropfn="drop"},
-	coal = {h=0,x=-99,y=68,z=170, suckfn="suck", dropfn="drop"},
-	wood = {h=2,x=-100,y=72,z=167,suckfn="suck", dropfn="drop"},
-	torch = {h=2,x=-118,y=72,z=176,suckfn="suck", dropfn="drop"},
-	pumpkin = {h=2,x=-118,y=70,z=176,suckfn="suck", dropfn="drop"},
-	planks = {h=0,x=-118,y=71,z=170,suckfn="suck", dropfn="drop"},
-	diamonds = {h=0,x=-115,y=72,z=170,suckfn="suck", dropfn="drop"}
+	cobble = {h=0,x=-102,y=70,z=171, suckfn="suck",dropfn="drop"},
+	coal = {h=0,x=-100,y=68,z=170, suckfn="suck", dropfn="drop"},
+	wood = {h=2,x=-101,y=72,z=167,suckfn="suck", dropfn="drop"},
+	torch = {h=2,x=-119,y=72,z=176,suckfn="suck", dropfn="drop"},
+	pumpkin = {h=2,x=-119,y=70,z=176,suckfn="suck", dropfn="drop"},
+	planks = {h=0,x=-119,y=71,z=170,suckfn="suck", dropfn="drop"},
+	diamonds = {h=0,x=-116,y=72,z=170,suckfn="suck", dropfn="drop"}
 }
