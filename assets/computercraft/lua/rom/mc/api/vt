@@ -36,7 +36,7 @@ function resetFuel()
 	_fuel = 0
 end
 
-function setLoc(h,x,y,z)
+function setLoc(x,y,z,h)
 	_th = h
 	_tx = x
 	_ty = y
@@ -48,7 +48,7 @@ function getHeading()
 end
 
 function getLoc()
-	return _th,_tx,_ty,_tz
+	return _tx,_ty,_tz,_th
 end
 
 function getLocUp()

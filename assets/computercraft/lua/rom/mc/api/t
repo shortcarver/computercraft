@@ -11,11 +11,26 @@ local _tx = 0
 local _ty = 0
 local _tz = 0
 local _callback = nil
+local _digDnCallback = nil
+local _digUpCallback = nil
+local _digCallback = nil
 local _sel = 0
 local FALL_TIME = 0.1
 local SUCK_TIME = 0.1
 local _minLevel = 10
 local ATTACK_TIME = 0.5
+
+function setDigCallback(callback)
+	_digCallback = callback
+end
+
+function setDigUpCallback(callback)
+	_digUpCallback = callback
+end
+
+function setDigDnCallback(callback)
+	_digDnCallback = callback
+end
 
 function cb()
 	if _callback ~= nil then
@@ -23,9 +38,27 @@ function cb()
 	end
 end
 
+function digEvent()
+	if _digCallback ~= nil then
+		_digCallback()
+	end
+end
+
+function digUpEvent()
+	if _digUpCallback ~= nil then
+		_digUpCallback()
+	end
+end
+
+function digDnEvent()
+	if _digDnCallback ~= nil then
+		_digDnCallback()
+	end
+end
+
 -- Location Functions --
 
-function setLoc(h,x,y,z)
+function setLoc(x,y,z,h)
 	_th = h
 	_tx = x
 	_ty = y
@@ -38,7 +71,7 @@ function getHeading()
 end
 
 function getLoc()
-	return _th,_tx,_ty,_tz
+	return _tx,_ty,_tz,_th
 end
 
 function getLocUp()
@@ -441,18 +474,22 @@ end
 
 -- dig wrappers --
 function dig()
+	digEvent()
 	return turtle.dig()
 end
 
 function digUp()
+	digUpEvent()
 	return turtle.digUp()
 end
 
 function digDown()
+	digDnEvent()
 	return turtle.digDown()
 end
 
 function digDn()
+	digDnEvent()
 	return turtle.digDown()
 end
 
@@ -609,11 +646,11 @@ function _mvDigAttack(fnMv, fnDetect, fnDig, fnAttack, count)
 end
 
 function upDigAttack(count)
-	return _mvDigAttack(up, detectUp, turtle.digUp, turtle.attackUp,count)
+	return _mvDigAttack(up, detectUp, digUp, turtle.attackUp,count)
 end
 
 function forwardDigAttack(count)
-	return _mvDigAttack(forward, detect, turtle.dig, turtle.attack,count)
+	return _mvDigAttack(forward, detect, dig, turtle.attack,count)
 end
 
 function downDigAttack(count)
@@ -621,7 +658,7 @@ function downDigAttack(count)
 end
 
 function fdDigAttack(count)
-	return _mvDigAttack(forward, detect, turtle.dig, turtle.attack,count)
+	return _mvDigAttack(forward, detect, dig, turtle.attack,count)
 end
 
 function dnDigAttack(count)
@@ -841,7 +878,7 @@ local function naviscan()
 end
 
 function gotoAttackNavi(x,y,z)
-	local h,cx,cy,cz = t.getLoc()
+	local cx,cy,cz,h = t.getLoc()
 
 	while cx ~= x or cy ~= y or cz ~= z do
 		local path = astar.findPath(x,y,z)
@@ -868,6 +905,6 @@ function gotoAttackNavi(x,y,z)
 			end
 		end
 
-		h, cx, cy, cz = t.getLoc()
+		cx, cy, cz, h = t.getLoc()
 	end
 end

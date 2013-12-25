@@ -35,7 +35,7 @@ function dropDn(s,f)
 end
 	
 
-t.setLoc(sh,sx,sy,sz)
+t.setLoc(sx,sy,sz,sh)
 
 -- smelting check
 local deliver = check(2,4)

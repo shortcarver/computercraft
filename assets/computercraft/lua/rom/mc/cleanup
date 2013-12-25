@@ -46,7 +46,7 @@ function addQueue(x,y,z)
 end
 
 function findNearestPoint()
-	local h,x,y,z = t.getLoc()
+	local x,y,z,h = t.getLoc()
 
 	local selV = nil
 	local selK = nil
@@ -56,7 +56,7 @@ function findNearestPoint()
 		if value ~= nil then
 
 			vt.reset()
-			vt.setLoc(h,x,y,z)
+			vt.setLoc(x,y,z,h)
 
 			vt.goto(value.x,value.y,value.z)
 			moves = vt.getMoves()
@@ -94,7 +94,7 @@ function getScanList()
 	vt.setLoc(t.getLoc())
 
 	for i=1,4 do
-		local h = vt.getLoc()
+		local jnk,jnk,jnk,h = vt.getLoc()
 		list[h+1] = not isHandled(vt.getLocFd())
 		vt.rt()
 	end
@@ -118,7 +118,7 @@ function scan()
 	
 	local list = getScanList()
 	
-	local h = t.getLoc()
+	local jnk,jnk,jnk,h = t.getLoc()
 
 	for i=1,4 do
 		local nh = ((i-1) + h) % 4

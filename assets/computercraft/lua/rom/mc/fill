@@ -58,7 +58,7 @@ function fillWalls()
 end
 
 function doFill()
-	local h,x,y,z = t.getLoc()
+	local x,y,z,h = t.getLoc()
 
 	local depth = 0
 

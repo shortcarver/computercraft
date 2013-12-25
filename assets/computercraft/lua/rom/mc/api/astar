@@ -28,7 +28,7 @@ function recalcMoves(data, point)
 	for k,p in pairs(testp) do
 		if p ~= nil then 
 			vt.reset()
-			vt.setLoc(p.h,p.x,p.y,p.z)
+			vt.setLoc(p.x,p.y,p.z,p.h)
 			vt.goto(point.x,point.y,point.z)
 
 			local m = vt.getMoves() + p.m
@@ -72,7 +72,7 @@ function findUnknowns(data, s)
 
 		if not skip then
 			vt.reset()
-			vt.setLoc(s.h,s.x,s.y,s.z)
+			vt.setLoc(s.x,s.y,s.z,s.h)
 			vt.goto(p.x,p.y,p.z)
 			vt.goto(f.x,f.y,f.z)
 
@@ -113,7 +113,7 @@ function findPath(x,y,z)
 	data.finish = {}
 	data.current = {}
 
-	local h,x1,y1,z1 = t.getLoc()
+	local x1,y1,z1,h = t.getLoc()
 
 	data.current = {x=x1,y=y1,z=z1,h=h,m=0,p=nil}
 	data.start = data.current

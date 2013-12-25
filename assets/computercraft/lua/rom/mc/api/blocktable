@@ -26,6 +26,7 @@ function remove(self, x, y, z)
 end
 
 function exists(self, x, y, z)
+	print(x)
 	return get(self,x,y,z) ~= nil
 end
 

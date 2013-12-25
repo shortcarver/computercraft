@@ -1,0 +1,365 @@
+local FUEL = 1
+local CHEST = 2
+local COBBLE = 3
+local DIRT = 4
+local STONE = 5
+
+local valuableSwitch = 0
+
+local scannedLocations = blocktable.new()
+local newLocations = {}
+local locationQueue = stack.new()
+
+function onDig()
+	local cx, cy, cz = t.getLocFd()
+	if isValuable() then
+		addLocation(cx,cy,cz)
+	end
+end
+
+function onDigUp()
+	local cx, cy, cz = t.getLocUp()
+	if isValuableUp() then
+		addLocation(cx,cy,cz)
+	end
+end
+
+function onDigDn()
+	local cx, cy, cz = t.getLocDn()
+	if isValuableDn() then
+		addLocation(cx,cy,cz)
+	end
+end
+
+t.setDigCallback(onDig)
+t.setDigUpCallback(onDigUp)
+t.setDigDnCallback(onDigDn)
+
+function _isValuable(detect, compare)
+	if not detect() then
+		return false
+	end
+	
+	if valuableSwitch == 0 then
+		valuableSwitch = 1
+
+		t.select(DIRT)
+		if compare() then
+			return false
+		end
+
+		t.select(COBBLE)
+		if compare() then
+			return false
+		end
+
+		t.select(STONE)
+		if compare() then
+			return false
+		end
+	else
+		valuableSwitch = 0
+
+		t.select(STONE)
+		if compare() then
+			return false
+		end
+
+		t.select(COBBLE)
+		if compare() then
+			return false
+		end
+
+		t.select(DIRT)
+		if compare() then
+			return false
+		end
+	end
+	
+
+	return true
+end
+function isValuable()
+	return _isValuable(t.detect, t.compare)
+end
+
+function isValuableUp()
+	return _isValuable(t.detectUp, t.compareUp)
+end
+
+function isValuableDn()
+	return _isValuable(t.detectDn, t.compareDn)
+end
+
+-- use cobble for up/down since dirt will clog fillers
+function placeJunkUp(force)
+	force = force or false
+
+	if t.getItemCount(COBBLE) > 40 or force then
+		t.select(COBBLE)
+		t.placeUp()
+	end
+end
+
+function placeJunkDn(force)
+	force = force or false
+
+	if t.getItemCount(COBBLE) > 40 or force then
+		t.select(COBBLE)
+		t.placeDown()
+	end
+end
+
+-- place dirt first to get rid of it
+function placeJunk(force)
+	force = force or false
+
+	if t.detect() then
+		return
+	end
+
+	if t.getItemCount(DIRT) > 1 then
+		t.select(DIRT)
+		t.place(DIRT)
+	elseif t.getItemCount(COBBLE) > 12 or force then
+		t.select(COBBLE)
+		t.place(COBBLE)
+	end
+end
+
+function _isChest(compare)
+	t.select(CHEST)
+	if t.compare() then
+		return true
+	end
+	return false
+end
+
+function isChest()
+	return _isChest(t.compare)
+end
+
+function isChestDn()
+	return _isChest(t.compareDn)
+end
+
+function isChestUp()
+	return _isChest(t.compareUp)
+end
+
+function _suckChest(fnSuck)
+	while fnSuck() do
+		os.sleep(0.1)
+	end
+end
+
+function suckChest()
+	_suckChest(turtle.suck)
+end
+
+function suckChestUp()
+	_suckChest(turtle.suckUp)
+end
+
+function suckChestDn()
+	_suckChest(turtle.suckDown)
+end
+
+function emptyInventory()
+	local x,y,z,h = t.getLoc()
+
+	t.gotoAttackNavi(0,0,0)
+
+	t.placeDn(CHEST)
+
+	dumpChest()
+
+	t.gotoAttackNavi(x,y,z)
+	t.setHeading(h)
+end
+
+function addToQueue(x,y,z)
+--	vt.reset()
+--	vt.setLoc(0,0,0,0)
+--	vt.goto(x,y,z)
+--	locationQueue:put({x=x,y=y,z=z}, vt.getMoves())
+	locationQueue:push({x=x,y=y,z=z})
+
+end
+
+function addLocation(x,y,z)
+	addToQueue(x-1, y-1, z-1)
+	addToQueue(x,   y-1, z-1)
+	addToQueue(x+1, y-1, z-1)
+	addToQueue(x-1, y,   z-1)
+	addToQueue(x,   y,   z-1)
+	addToQueue(x+1, y,   z-1)
+	addToQueue(x-1, y+1, z-1)
+	addToQueue(x,   y+1, z-1)
+	addToQueue(x+1, y+1, z-1)
+	addToQueue(x-1, y-1, z)
+	addToQueue(x,   y-1, z)
+	addToQueue(x+1, y-1, z)
+	addToQueue(x-1, y,   z)
+	addToQueue(x+1, y,   z)
+	addToQueue(x-1, y+1, z)
+	addToQueue(x,   y+1, z)
+	addToQueue(x+1, y+1, z)
+	addToQueue(x-1, y-1, z+1)
+	addToQueue(x,   y-1, z+1)
+	addToQueue(x+1, y-1, z+1)
+	addToQueue(x-1, y,   z+1)
+	addToQueue(x,   y,   z+1)
+	addToQueue(x+1, y,   z+1)
+	addToQueue(x-1, y+1, z+1)
+	addToQueue(x,   y+1, z+1)
+	addToQueue(x+1, y+1, z+1)
+
+	addToQueue(x,   y,   z)
+end
+
+function _scanAndDig(fnValuable, fnIsChest, fnSuck, fnDig, fnLoc)
+	local cx,cy,cz = t.getLoc()
+	scannedLocations:set(cx,cy,cz, true)
+	if fnValuable() then
+		addLocation(fnLoc())
+		t.select(1)
+		if fnIsChest() then
+			t.select(1)
+			while fnSuck() do
+				os.sleep(SUCK_TIME)
+			end
+
+			while t.isInventoryFull() do
+				emptyInventory()
+
+				t.select(1)
+				while fnSuck() do
+					os.sleep(SUCK_TIME)
+				end
+			end
+		end
+
+		t.select(1)
+		fnDig()
+
+		if t.isInventoryFull() then
+			emptyInventory()
+		end
+	end
+end
+
+function scanAndDig()
+	_scanAndDig(isValuable, isChest, turtle.suck, t.digAll, t.getLocFd)
+end
+
+function scanAndDigUp()
+	_scanAndDig(isValuableUp, isChestUp, turtle.suckUp, t.digAllUp, t.getLocUp)
+end
+
+function scanAndDigDn()
+	_scanAndDig(isValuableDn, isChestDn, turtle.suckDn, t.digDn, t.getLocDn)
+end
+
+function scanAndDigAll()
+	local cx,cy,cz = t.getLoc()
+	if scannedLocations:exists(cx,cy,cz) then
+		return
+	end
+
+	scanAndDigUp()
+	scanAndDigDn()
+	scanAndDig()
+	t.rt()
+	scanAndDig()
+	t.rt()
+	scanAndDig()
+	t.rt()
+	scanAndDig()
+end
+
+function dumpChest()
+	local map = {
+		32, 32, 64,  64,
+		 1,  0,  0,  0,
+		 0,  0,  0,  0,
+		 0,  0,  0,  0
+	}
+
+	for i=1,16 do
+		if t.getItemCount(i) > map[i] then
+			t.select(i)
+			t.dropDn(t.getItemCount(i) - map[i])
+		end
+	end
+
+end
+
+-- start program --
+
+local args = { ... }
+
+if #args == 0 then
+	print("---branch mine---")
+	print("The automated branch mining script")
+	print("Fill the slots with the items below")
+	print(" slot-item(amount)")
+	print(" 1-coal(32)")
+	print(" 2-cobble(13)")
+	print(" 3-chest(32)")
+	print(" 4-stone(1)")
+	print(" 5-dirt(1)")
+	print("")
+	print("Usage:")
+	print(" branchmine number")
+	print("--does a branch mine at a depth of number")
+
+	error()
+end
+
+
+local depth = tonumber(args[1])
+
+if depth ~= nil then
+	-- we are located here
+	t.setLoc(0,0,0,0)
+	scannedLocations:set(0,-1,0, true)
+
+	while depth > 0 do
+		-- save current location
+		local cx,cy,cz,ch = t.getLoc()
+
+		addToQueue(cx,cy,cz)
+
+		-- scan around
+		scanAndDigAll()
+
+		print("3")
+		-- pop items on stack until I get nil
+		local loc = locationQueue:peek()
+		while loc ~= nil do
+			if not scannedLocations:exists(loc.x,loc.y,loc.z) then
+				t.gotoDigAttack(loc.x,loc.y,loc.z)
+
+				scanAndDigAll()
+
+				scannedLocations:set(loc.x,loc.y,loc.z, true)
+			else
+				locationQueue:pop()
+				print("4")
+				loc = locationQueue:peek()
+			end
+		end
+		t.gotoDigAttack(cx,cy,cz)
+		t.setHeading(ch)
+
+		t.select(1)
+		t.fdDigAttack()
+
+		depth = depth - 1
+	end
+
+	t.gotoAttackNavi(0,0,0)
+end
+
+

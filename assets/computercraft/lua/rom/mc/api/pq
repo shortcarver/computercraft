@@ -7,6 +7,7 @@ function create(max)
 	q.size = size
 	q.pop = pop
 	q.put = put
+	q.peek = peek
 	q.contains = contains
 	q.containsKey = containsKey
 
@@ -43,6 +44,14 @@ function pop(q)
 	end
 
 	return val, key
+end
+
+function peek(q)
+	if q.heap[0] == nil then
+		return nil
+	end
+
+	return q.heap[0].v
 end
 
 function put(q, value, key)

@@ -1,0 +1,7 @@
+local path = shell.path()
+
+path = path .. ":/rom/mc"
+
+shell.setPath(path)
+
+shell.run("/rom/mc/api/_loadapis")

@@ -49,7 +49,7 @@ function dropExtra(loc, count)
 	end
 end
 
-t.setLoc(sh,sx,sy,sz)
+t.setLoc(sx,sy,sz,sh)
 
 if t.getItemCount(1) > 32 then
 	goto(places.dropoff.coal)

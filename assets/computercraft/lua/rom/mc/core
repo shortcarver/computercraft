@@ -201,7 +201,7 @@ end
 
 function mine()
 	local depth = 0
-	local heading = t.getLoc()
+	local jnk,jnk,jnk,heading = t.getLoc()
 
 	-- go down, place cap
 	t.select(FUEL)
