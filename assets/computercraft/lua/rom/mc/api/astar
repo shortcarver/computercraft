@@ -13,7 +13,11 @@
 .................................................
 ]]--
 
+function new()
+	local handle = {}
 
+	return handle
+end
 
 function recalcMoves(data, point)
 	local minm = -1

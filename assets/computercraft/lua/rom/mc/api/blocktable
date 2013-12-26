@@ -1,12 +1,44 @@
 function new()
 	local table = {}
 	table.map = {}
+	table.autosave = false
+	table.filename = nil
 	table.set = set
 	table.get = get
 	table.remove = remove
 	table.exists = exists
 
 	return table
+end
+
+function save(self, filename)
+	local data = {}
+	data.map = self.map
+	data.autosave = self.autosave
+	data.filename = self.filename
+
+	t.saveObject(filename, data)
+end
+
+function load(filename)
+	local data = t.loadObject(filename)
+
+	local table = new()
+	table.map = data.map
+	table.autosave = data.autosave
+	table.filename = data.filename
+
+	return table
+end
+
+function setSaveOnChange(self, filename)
+	self.autosave = true
+	self.savefile = filename
+end
+
+function clearSaveOnChange(self)
+	self.autosave = false
+	self.savefile = nil
 end
 
 function hashLoc(x,y,z)
@@ -19,14 +51,21 @@ end
 
 function set(self, x, y, z, value)
 	self.map[hashLoc(x,y,z)] = value
+
+	if self.autosave then
+		self:save(self, self.filename)
+	end
 end
 
 function remove(self, x, y, z)
 	self.map[hashLoc(x,y,z)] = nil
+
+	if self.autosave then
+		self:save(self, self.filename)
+	end
 end
 
 function exists(self, x, y, z)
-	print(x)
 	return get(self,x,y,z) ~= nil
 end
 

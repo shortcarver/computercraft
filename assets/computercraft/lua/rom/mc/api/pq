@@ -23,6 +23,27 @@ function create(max)
 	return q
 end
 
+function save(q,filename)
+	local data = {}
+
+	data.max = q.max
+	data.heap = q.heap
+	data.count = q.count
+
+	t.saveObject(filename, data)
+end
+
+function load(filename)
+	local data = t.loadObject(filename)
+
+	local q = create(data.max)
+
+	q.count = data.count
+	q.heap = q.heap
+
+	return q
+end
+
 function size(q)
 	return q.count
 end

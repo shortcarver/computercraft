@@ -908,3 +908,50 @@ function gotoAttackNavi(x,y,z)
 		cx, cy, cz, h = t.getLoc()
 	end
 end
+
+function gotoAttackDigNavi(x,y,z,banlist)
+	local cx,cy,cz,h = t.getLoc()
+
+	while cx ~= x or cy ~= y or cz ~= z do
+		local path = astar.findPath(x,y,z)
+
+		for k,v in pairs(path) do
+			if t.detect() then
+				blockmap.add(t.getLocFd())
+				--naviPlace(t.compare, t.replace)
+			end
+			if t.detectUp() then
+				blockmap.add(t.getLocUp())
+				--naviPlace(t.compareUp, t.replaceUp)
+			end
+			if t.detectDn() then
+				blockmap.add(t.getLocDn())
+				--naviPlace(t.compareDn, t.replaceDn)
+			end
+
+			if not t.gotoAttack(v.x,v.y,v.z) then
+				print("goto failed")
+				print(v.x..","..v.y..","..v.z)
+				naviscan()
+				break
+			end
+		end
+
+		cx, cy, cz, h = t.getLoc()
+	end
+end
+
+function saveObject(filename, object)
+	local f,err = fs.open(filename, "w")
+	f.write(textutils.serialize(object))
+	f.flush()
+	f.close()
+end
+
+function loadObject(filename)
+	local f,err = fs.open(filename, "r")
+	local data = f.readLine()
+	f.close()
+
+	return textutils.unserialize(data)
+end

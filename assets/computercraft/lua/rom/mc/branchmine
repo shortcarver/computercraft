@@ -8,32 +8,53 @@ local valuableSwitch = 0
 
 local visited = blocktable.new()
 local targets = pq.create(false)
-local distance = 10
+local cantdig = blocktable.new()
+local distance = 32
+
+function _onDig(fnIsValuable, fnGetLoc)
+	local cx, cy, cz = fnGetLoc()
+	if fnIsValuable() then
+		addTarget(cx,cy,cz)
+end
 
 function onDig()
-	local cx, cy, cz = t.getLocFd()
-	if isValuable() then
-		addTarget(cx,cy,cz)
-	end
+	_onDig(isValuable, t.getLocFd)
 end
 
 function onDigUp()
-	local cx, cy, cz = t.getLocUp()
-	if isValuableUp() then
-		addTarget(cx,cy,cz)
-	end
+	_onDig(isValuableUp, t.getLocUp)
 end
 
 function onDigDn()
-	local cx, cy, cz = t.getLocDn()
-	if isValuableDn() then
-		addTarget(cx,cy,cz)
-	end
+	_onDig(isValuableDn, t.getLocDn)
 end
 
 t.setDigCallback(onDig)
 t.setDigUpCallback(onDigUp)
 t.setDigDnCallback(onDigDn)
+
+function _safeDig(fnIsValuable, fnIsChest, fnSuck, fnDig)
+	-- if it's valuable, then we want to check if it's a chest before digging it
+	if fnIsChest() then
+		t.select(1)
+		while fnSuck() do
+			os.sleep(SUCK_TIME)
+		end
+
+		if t.isInventoryFull() then
+			emptyInventory()
+		end
+	end			
+
+	local state = fnDig()
+
+	if t.isInventoryFull() then
+		emptyInventory()
+	end
+
+	return state
+end
+
 
 function _isValuable(detect, compare)
 	if not detect() then
@@ -174,8 +195,10 @@ function emptyInventory()
 
 	dumpChest()
 
-	t.gotoAttackNavi(x,y,z)
-	t.setHeading(h)
+	visited.save("/visited.branchmine")
+	targets.save("/targets.branchmine")
+
+	error()
 end
 
 function addToTarget(x,y,z)
@@ -307,11 +330,12 @@ if #args == 0 then
 	print(" branchmine number")
 	print("--does a branch mine at a depth of number")
 
-	error()
 end
 
-
-distance = tonumber(args[1])
+if fs.exists("/visited.branchmine") then
+	visited = t.loadObject("/visited.branchmine")
+	targets = t.loadObject("/targets.branchmine")
+end
 
 if distance ~= nil then
 	-- we are located here

@@ -10,6 +10,19 @@ function new()
 	return stck
 end
 
+function save(self, filename)
+	t.saveObject(filename, self.head)
+end
+
+function load(filename)
+	local head = t.loadObject(filename)
+
+	local stck = new()
+	stck.head = head
+
+	return stck
+end
+
 function pop(self)
 	local head = self.head
 
