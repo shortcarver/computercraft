@@ -6,28 +6,28 @@ local STONE = 5
 
 local valuableSwitch = 0
 
-local scannedLocations = blocktable.new()
-local newLocations = {}
-local locationQueue = stack.new()
+local visited = blocktable.new()
+local targets = pq.create(false)
+local distance = 10
 
 function onDig()
 	local cx, cy, cz = t.getLocFd()
 	if isValuable() then
-		addLocation(cx,cy,cz)
+		addTarget(cx,cy,cz)
 	end
 end
 
 function onDigUp()
 	local cx, cy, cz = t.getLocUp()
 	if isValuableUp() then
-		addLocation(cx,cy,cz)
+		addTarget(cx,cy,cz)
 	end
 end
 
 function onDigDn()
 	local cx, cy, cz = t.getLocDn()
 	if isValuableDn() then
-		addLocation(cx,cy,cz)
+		addTarget(cx,cy,cz)
 	end
 end
 
@@ -178,51 +178,36 @@ function emptyInventory()
 	t.setHeading(h)
 end
 
-function addToQueue(x,y,z)
---	vt.reset()
---	vt.setLoc(0,0,0,0)
---	vt.goto(x,y,z)
---	locationQueue:put({x=x,y=y,z=z}, vt.getMoves())
-	locationQueue:push({x=x,y=y,z=z})
+function addToTarget(x,y,z)
+	vt.reset()
+	vt.setLoc(0,0,0,0)
+	vt.goto(x,y,z)
+
+	if vt.getMoves() < distance then
+		targets:put({x=x,y=y,z=z}, y*1000000 + x * 1000 + z)
+	end
 
 end
 
-function addLocation(x,y,z)
-	addToQueue(x-1, y-1, z-1)
-	addToQueue(x,   y-1, z-1)
-	addToQueue(x+1, y-1, z-1)
-	addToQueue(x-1, y,   z-1)
-	addToQueue(x,   y,   z-1)
-	addToQueue(x+1, y,   z-1)
-	addToQueue(x-1, y+1, z-1)
-	addToQueue(x,   y+1, z-1)
-	addToQueue(x+1, y+1, z-1)
-	addToQueue(x-1, y-1, z)
-	addToQueue(x,   y-1, z)
-	addToQueue(x+1, y-1, z)
-	addToQueue(x-1, y,   z)
-	addToQueue(x+1, y,   z)
-	addToQueue(x-1, y+1, z)
-	addToQueue(x,   y+1, z)
-	addToQueue(x+1, y+1, z)
-	addToQueue(x-1, y-1, z+1)
-	addToQueue(x,   y-1, z+1)
-	addToQueue(x+1, y-1, z+1)
-	addToQueue(x-1, y,   z+1)
-	addToQueue(x,   y,   z+1)
-	addToQueue(x+1, y,   z+1)
-	addToQueue(x-1, y+1, z+1)
-	addToQueue(x,   y+1, z+1)
-	addToQueue(x+1, y+1, z+1)
+function addTarget(x,y,z)
+	addToTarget(x-1, y-1, z+1)
+	addToTarget(x-1, y-1, z-1)
+	addToTarget(x+1, y-1, z+1)
+	addToTarget(x+1, y-1, z-1)
 
-	addToQueue(x,   y,   z)
+	addToTarget(x-1, y+1, z+1)
+	addToTarget(x-1, y+1, z-1)
+	addToTarget(x+1, y+1, z+1)
+	addToTarget(x+1, y+1, z-1)
+
+	addToTarget(x,   y,   z)
 end
 
 function _scanAndDig(fnValuable, fnIsChest, fnSuck, fnDig, fnLoc)
 	local cx,cy,cz = t.getLoc()
-	scannedLocations:set(cx,cy,cz, true)
+	visited:set(cx,cy,cz, true)
 	if fnValuable() then
-		addLocation(fnLoc())
+		addTarget(fnLoc())
 		t.select(1)
 		if fnIsChest() then
 			t.select(1)
@@ -263,12 +248,20 @@ end
 
 function scanAndDigAll()
 	local cx,cy,cz = t.getLoc()
-	if scannedLocations:exists(cx,cy,cz) then
+	if visited:exists(cx,cy,cz) then
 		return
 	end
 
-	scanAndDigUp()
-	scanAndDigDn()
+	local x,y,z = t.getLocUp()
+	if not visited:exists(x,y,z) then
+		scanAndDigUp()
+	end
+	
+	x,y,z = t.getLocDn()
+	if not visited:exists(x,y,z) then
+		scanAndDigDn()
+	end
+
 	scanAndDig()
 	t.rt()
 	scanAndDig()
@@ -318,36 +311,34 @@ if #args == 0 then
 end
 
 
-local depth = tonumber(args[1])
+distance = tonumber(args[1])
 
-if depth ~= nil then
+if distance ~= nil then
 	-- we are located here
 	t.setLoc(0,0,0,0)
-	scannedLocations:set(0,-1,0, true)
+	visited:set(0,-1,0, true)
 
-	while depth > 0 do
+	while distance > 0 do
 		-- save current location
 		local cx,cy,cz,ch = t.getLoc()
 
-		addToQueue(cx,cy,cz)
+		addToTarget(cx,cy,cz)
 
 		-- scan around
 		scanAndDigAll()
 
-		print("3")
 		-- pop items on stack until I get nil
-		local loc = locationQueue:peek()
+		local loc = targets:peek()
 		while loc ~= nil do
-			if not scannedLocations:exists(loc.x,loc.y,loc.z) then
+			if not visited:exists(loc.x,loc.y,loc.z) then
 				t.gotoDigAttack(loc.x,loc.y,loc.z)
 
 				scanAndDigAll()
 
-				scannedLocations:set(loc.x,loc.y,loc.z, true)
+				visited:set(loc.x,loc.y,loc.z, true)
 			else
-				locationQueue:pop()
-				print("4")
-				loc = locationQueue:peek()
+				targets:pop()
+				loc = targets:peek()
 			end
 		end
 		t.gotoDigAttack(cx,cy,cz)
@@ -356,10 +347,15 @@ if depth ~= nil then
 		t.select(1)
 		t.fdDigAttack()
 
-		depth = depth - 1
+		distance = distance - 1
 	end
 
-	t.gotoAttackNavi(0,0,0)
+	t.downDigAttack()
+	t.gotoDigAttack(0,-1,0)
+	t.gotoDigAttack(0,0,0)
+	t.placeDn(CHEST)
+	dumpChest()
+	t.rt(2)
 end
 
 

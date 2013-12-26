@@ -33,7 +33,6 @@ function push(self, obj)
 end
 
 function peek(self)
-	print(self)
 	local h = self.head
 
 	if h == nil then
