@@ -13,12 +13,6 @@
 .................................................
 ]]--
 
-function new()
-	local handle = {}
-
-	return handle
-end
-
 function recalcMoves(data, point)
 	local minm = -1
 	local testp = {
@@ -70,7 +64,7 @@ function findUnknowns(data, s)
 			skip = true
 		end
 
-		if blockmap.exists(p.x,p.y,p.z) then
+		if data.avoid:exists(p.x,p.y,p.z) then
 			skip = true
 		end
 
@@ -106,13 +100,14 @@ function getBestUnknown(data)
 	return p
 end
 
-function findPath(x,y,z)
+function findPath(x,y,z,avoid)
 	print("init data structures")
 
 	local data = {}
 	data.path = blocktable.new()
 	data.unknowns = blocktable.new()
 	data.uq = pq.create(false)
+	data.avoid = avoid
 	data.start = {}
 	data.finish = {}
 	data.current = {}

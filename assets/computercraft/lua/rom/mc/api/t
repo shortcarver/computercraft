@@ -631,7 +631,10 @@ function _mvDigAttack(fnMv, fnDetect, fnDig, fnAttack, count)
 		while not fnMv() do
 			-- if block, then dig
 			if fnDetect() then
-				fnDig()
+				if not fnDig() then
+					return false
+				end
+
 				os.sleep(FALL_TIME)
 			else
 				-- this is a mob, attack until nothing to attack
@@ -855,52 +858,76 @@ end
 	end
 end]]--
 
-local function naviscan()
+local function naviscan(avoid)
+	local x,y,z
 	if t.detectUp() then
-		blockmap.add(t.getLocUp())
-		--naviPlace(t.compareUp, t.replaceUp)
+		x,y,z = t.getLocUp()
+		avoid:set(x,y,z, true)
 	end
 	if t.detectDn() then
-		blockmap.add(t.getLocDn())
-		--naviPlace(t.compareDn, t.replaceDn)
+		x,y,z = t.getLocDn()
+		avoid:set(x,y,z, true)
 	end
 	for i=1,3 do
 		if t.detect() then
-			blockmap.add(t.getLocFd())
-			--naviPlace(t.compare, t.replace)
+			x,y,z = t.getLocFd()
+			avoid:set(x,y,z, true)
 		end
 		t.rt()
 	end
 	if t.detect() then
-		blockmap.add(t.getLocFd())
-		--naviPlace(t.compare, t.replace)
+		x,y,z = t.getLocFd()
+		avoid:set(x,y,z, true)
 	end
 end
 
-function gotoAttackNavi(x,y,z)
+local function naviscanDig(avoid)
+	local x,y,z
+	if t.detectUp() then
+		if not t.digUp() then
+			x,y,z = t.getLocUp()
+			avoid:set(x,y,z, true)
+		end
+	end
+	if t.detectDn() then
+		if not t.digDn() then
+			x,y,z = t.getLocDn()
+			avoid:set(x,y,z, true)
+		end
+	end
+	if t.detect() then
+		if not t.dig() then
+			x,y,z = t.getLocFd()
+			avoid:set(x,y,z, true)
+		end
+	end
+end
+
+function gotoAttackNavi(x,y,z,avoid)
 	local cx,cy,cz,h = t.getLoc()
+	local xt,yt,zt
 
 	while cx ~= x or cy ~= y or cz ~= z do
-		local path = astar.findPath(x,y,z)
+		local path = astar.findPath(x,y,z, avoid)
 
 		for k,v in pairs(path) do
 			if t.detect() then
-				blockmap.add(t.getLocFd())
-				--naviPlace(t.compare, t.replace)
+				xt,yt,zt = t.getLocFd()
+				avoid:set(xt,yt,zt, true)
 			end
 			if t.detectUp() then
-				blockmap.add(t.getLocUp())
-				--naviPlace(t.compareUp, t.replaceUp)
+				xt,yt,zt = t.getLocUp()
+				avoid:set(xt,yt,zt, true)
 			end
 			if t.detectDn() then
-				blockmap.add(t.getLocDn())
-				--naviPlace(t.compareDn, t.replaceDn)
+				xt,yt,zt = t.getLocDn()
+				avoid:set(xt,yt,zt, true)
 			end
 
 			if not t.gotoAttack(v.x,v.y,v.z) then
 				print("goto failed")
 				print(v.x..","..v.y..","..v.z)
-				naviscan()
+				naviscan(avoid)
 				break
 			end
 		end
@@ -909,30 +936,18 @@ function gotoAttackNavi(x,y,z)
 	end
 end
 
-function gotoAttackDigNavi(x,y,z,banlist)
+function gotoAttackDigNavi(x,y,z,avoid)
 	local cx,cy,cz,h = t.getLoc()
 
 	while cx ~= x or cy ~= y or cz ~= z do
-		local path = astar.findPath(x,y,z)
+		local path = astar.findPath(x,y,z,avoid)
 
 		for k,v in pairs(path) do
-			if t.detect() then
-				blockmap.add(t.getLocFd())
-				--naviPlace(t.compare, t.replace)
-			end
-			if t.detectUp() then
-				blockmap.add(t.getLocUp())
-				--naviPlace(t.compareUp, t.replaceUp)
-			end
-			if t.detectDn() then
-				blockmap.add(t.getLocDn())
-				--naviPlace(t.compareDn, t.replaceDn)
-			end
 
-			if not t.gotoAttack(v.x,v.y,v.z) then
+			if not t.gotoDigAttack(v.x,v.y,v.z) then
 				print("goto failed")
 				print(v.x..","..v.y..","..v.z)
-				naviscan()
+				naviscanDig(avoid)
 				break
 			end
 		end

@@ -7,6 +7,9 @@ function new()
 	table.get = get
 	table.remove = remove
 	table.exists = exists
+	table.setSaveOnChange = setSaveOnChange
+	table.clearSaveOnChange = clearSaveOnChange
+	table.save = save
 
 	return table
 end
@@ -53,7 +56,7 @@ function set(self, x, y, z, value)
 	self.map[hashLoc(x,y,z)] = value
 
 	if self.autosave then
-		self:save(self, self.filename)
+		self:save(self.savefile)
 	end
 end
 
@@ -61,7 +64,7 @@ function remove(self, x, y, z)
 	self.map[hashLoc(x,y,z)] = nil
 
 	if self.autosave then
-		self:save(self, self.filename)
+		self:save(self.savefile)
 	end
 end
 

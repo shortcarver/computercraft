@@ -10,6 +10,11 @@ function create(max)
 	q.peek = peek
 	q.contains = contains
 	q.containsKey = containsKey
+	q.save = save
+	q.autosave = false
+	q.savefile = nil
+	q.setSaveOnChange = setSaveOnChange
+	q.clearSaveOnChange = clearSaveOnChange
 
 	q.heap = {}
 	q.count = 0
@@ -44,6 +49,16 @@ function load(filename)
 	return q
 end
 
+function setSaveOnChange(q, filename)
+	q.autosave = true
+	q.savefile = filename
+end
+
+function clearSaveOnChange(q)
+	q.autosave = false
+	q.savefile = nil
+end
+
 function size(q)
 	return q.count
 end
@@ -64,6 +79,10 @@ function pop(q)
 		_minHeapify(q, 0)
 	end
 
+	if q.autosave then
+		q:save(q.savefile)
+	end
+
 	return val, key
 end
 
@@ -81,6 +100,10 @@ function put(q, value, key)
 	q.count = q.count + 1
 
 	_cleanheap(q, q.count - 1)
+
+	if q.autosave then
+		q:save(q.savefile)
+	end
 end
 
 function contains(q, value)

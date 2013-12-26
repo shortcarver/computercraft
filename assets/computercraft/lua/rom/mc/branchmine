@@ -6,34 +6,37 @@ local STONE = 5
 
 local valuableSwitch = 0
 
-local visited = blocktable.new()
-local targets = pq.create(false)
-local cantdig = blocktable.new()
+local visited = nil
+local targets = nil
+local cantdig = nil
 local distance = 32
 
 function _onDig(fnIsValuable, fnGetLoc)
+	t.select(1)
+
 	local cx, cy, cz = fnGetLoc()
 	if fnIsValuable() then
 		addTarget(cx,cy,cz)
+	end
 end
 
 function onDig()
-	_onDig(isValuable, t.getLocFd)
+	return _onDig(isValuable, t.getLocFd)
 end
 
 function onDigUp()
-	_onDig(isValuableUp, t.getLocUp)
+	return _onDig(isValuableUp, t.getLocUp)
 end
 
 function onDigDn()
-	_onDig(isValuableDn, t.getLocDn)
+	return _onDig(isValuableDn, t.getLocDn)
 end
 
 t.setDigCallback(onDig)
 t.setDigUpCallback(onDigUp)
 t.setDigDnCallback(onDigDn)
 
-function _safeDig(fnIsValuable, fnIsChest, fnSuck, fnDig)
+function _safeDig(fnIsValuable, fnIsChest, fnSuck, fnDig, fnDigLoc)
 	-- if it's valuable, then we want to check if it's a chest before digging it
 	if fnIsChest() then
 		t.select(1)
@@ -46,7 +49,9 @@ function _safeDig(fnIsValuable, fnIsChest, fnSuck, fnDig)
 		end
 	end			
 
-	local state = fnDig()
+	if not fnDig() then
+		cantdig:set(fnDigLoc(), true)
+	end
 
 	if t.isInventoryFull() then
 		emptyInventory()
@@ -189,19 +194,22 @@ end
 function emptyInventory()
 	local x,y,z,h = t.getLoc()
 
-	t.gotoAttackNavi(0,0,0)
+	t.gotoAttackDigNavi(0,0,0,cantdig)
 
 	t.placeDn(CHEST)
 
 	dumpChest()
 
-	visited.save("/visited.branchmine")
-	targets.save("/targets.branchmine")
+	t.setHeading(0)
 
 	error()
 end
 
 function addToTarget(x,y,z)
+	if visited:exists(x,y,z) then
+		return
+	end
+
 	vt.reset()
 	vt.setLoc(0,0,0,0)
 	vt.goto(x,y,z)
@@ -327,20 +335,43 @@ if #args == 0 then
 	print(" 5-dirt(1)")
 	print("")
 	print("Usage:")
-	print(" branchmine number")
-	print("--does a branch mine at a depth of number")
-
+	print(" branchmine restart")
+	print("--restarts the mining process")
+	print(" branchmine")
+	print("--starts/resumes the mining process")
 end
 
-if fs.exists("/visited.branchmine") then
-	visited = t.loadObject("/visited.branchmine")
-	targets = t.loadObject("/targets.branchmine")
+if args[1] == "restart" then
+	visited = blocktable.new()
+	visited:setSaveOnChange("/visited.branchmine")
+
+	targets = pq.create(false)
+	targets:setSaveOnChange("/targets.branchmine")
+
+	cantdig = blocktable.new()
+	cantdig:setSaveOnChange("/cantdig.branchmine")
+
+elseif fs.exists("/visited.branchmine") then
+	visited = blocktable.load("/visited.branchmine")
+	targets = pq.load("/targets.branchmine")
+	cantdig = blocktable.load("/cantdig.branchmine")
+else
+	visited = blocktable.new()
+	visited:setSaveOnChange("/visited.branchmine")
+
+	targets = pq.create(false)
+	targets:setSaveOnChange("/targets.branchmine")
+
+	cantdig = blocktable.new()
+	cantdig:setSaveOnChange("/cantdig.branchmine")
 end
+
+
 
 if distance ~= nil then
 	-- we are located here
 	t.setLoc(0,0,0,0)
-	visited:set(0,-1,0, true)
+	cantdig:set(0,-1,0, true)
 
 	while distance > 0 do
 		-- save current location
@@ -355,7 +386,7 @@ if distance ~= nil then
 		local loc = targets:peek()
 		while loc ~= nil do
 			if not visited:exists(loc.x,loc.y,loc.z) then
-				t.gotoDigAttack(loc.x,loc.y,loc.z)
+				t.gotoAttackDigNavi(loc.x,loc.y,loc.z,cantdig)
 
 				scanAndDigAll()
 
