@@ -11,6 +11,51 @@ local targets = nil
 local cantdig = nil
 local distance = 32
 
+local args = { ... }
+
+if #args == 0 then
+	print("---branch mine---")
+	print("The automated branch mining script")
+	print("Fill the slots with the items below")
+	print(" slot-item(amount)")
+	print(" 1-coal(32)")
+	print(" 2-chest(13)")
+	print(" 3-cobble(32)")
+	print(" 4-dirt(1)")
+	print(" 5-stone(1)")
+	print("")
+	print("Usage:")
+	print(" branchmine restart")
+	print("--restarts the mining process")
+	print(" branchmine")
+	print("--starts/resumes the mining process")
+end
+
+if args[1] == "restart" then
+	visited = blocktable.new()
+	visited:setSaveOnChange("/visited.branchmine")
+
+	targets = pq.create(false)
+	targets:setSaveOnChange("/targets.branchmine")
+
+	cantdig = blocktable.new()
+	cantdig:setSaveOnChange("/cantdig.branchmine")
+
+elseif fs.exists("/visited.branchmine") then
+	visited = blocktable.load("/visited.branchmine")
+	targets = pq.load("/targets.branchmine")
+	cantdig = blocktable.load("/cantdig.branchmine")
+else
+	visited = blocktable.new()
+	visited:setSaveOnChange("/visited.branchmine")
+
+	targets = pq.create(false)
+	targets:setSaveOnChange("/targets.branchmine")
+
+	cantdig = blocktable.new()
+	cantdig:setSaveOnChange("/cantdig.branchmine")
+end
+
 function _onDig(fnIsValuable, fnGetLoc)
 	t.select(1)
 
@@ -321,53 +366,6 @@ end
 
 -- start program --
 
-local args = { ... }
-
-if #args == 0 then
-	print("---branch mine---")
-	print("The automated branch mining script")
-	print("Fill the slots with the items below")
-	print(" slot-item(amount)")
-	print(" 1-coal(32)")
-	print(" 2-cobble(13)")
-	print(" 3-chest(32)")
-	print(" 4-stone(1)")
-	print(" 5-dirt(1)")
-	print("")
-	print("Usage:")
-	print(" branchmine restart")
-	print("--restarts the mining process")
-	print(" branchmine")
-	print("--starts/resumes the mining process")
-end
-
-if args[1] == "restart" then
-	visited = blocktable.new()
-	visited:setSaveOnChange("/visited.branchmine")
-
-	targets = pq.create(false)
-	targets:setSaveOnChange("/targets.branchmine")
-
-	cantdig = blocktable.new()
-	cantdig:setSaveOnChange("/cantdig.branchmine")
-
-elseif fs.exists("/visited.branchmine") then
-	visited = blocktable.load("/visited.branchmine")
-	targets = pq.load("/targets.branchmine")
-	cantdig = blocktable.load("/cantdig.branchmine")
-else
-	visited = blocktable.new()
-	visited:setSaveOnChange("/visited.branchmine")
-
-	targets = pq.create(false)
-	targets:setSaveOnChange("/targets.branchmine")
-
-	cantdig = blocktable.new()
-	cantdig:setSaveOnChange("/cantdig.branchmine")
-end
-
-
-
 if distance ~= nil then
 	-- we are located here
 	t.setLoc(0,0,0,0)
@@ -405,12 +403,10 @@ if distance ~= nil then
 		distance = distance - 1
 	end
 
-	t.downDigAttack()
-	t.gotoDigAttack(0,-1,0)
-	t.gotoDigAttack(0,0,0)
+	t.gotoAttackDigNavi(0,0,0,cantdig)
 	t.placeDn(CHEST)
 	dumpChest()
-	t.rt(2)
+	t.setHeading(0)
 end
 
 

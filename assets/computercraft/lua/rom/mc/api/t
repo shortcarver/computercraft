@@ -908,7 +908,7 @@ function gotoAttackNavi(x,y,z,avoid)
 	local xt,yt,zt
 
 	while cx ~= x or cy ~= y or cz ~= z do
-		local path = astar.findPath(x,y,z, avoid)
+		local path = astar.findPath(x,y,z,avoid)
 
 		for k,v in pairs(path) do
 			if t.detect() then
