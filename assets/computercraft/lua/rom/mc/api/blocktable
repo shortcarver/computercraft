@@ -2,7 +2,7 @@ function new()
 	local table = {}
 	table.map = {}
 	table.autosave = false
-	table.filename = nil
+	table.savefile = nil
 	table.set = set
 	table.get = get
 	table.remove = remove
@@ -18,7 +18,7 @@ function save(self, filename)
 	local data = {}
 	data.map = self.map
 	data.autosave = self.autosave
-	data.filename = self.filename
+	data.savefile = self.savefile
 
 	t.saveObject(filename, data)
 end
@@ -29,7 +29,7 @@ function load(filename)
 	local table = new()
 	table.map = data.map
 	table.autosave = data.autosave
-	table.filename = data.filename
+	table.savefile = data.savefile
 
 	return table
 end
@@ -37,6 +37,7 @@ end
 function setSaveOnChange(self, filename)
 	self.autosave = true
 	self.savefile = filename
+	self:save(self.savefile)
 end
 
 function clearSaveOnChange(self)
@@ -71,4 +72,3 @@ end
 function exists(self, x, y, z)
 	return get(self,x,y,z) ~= nil
 end
-

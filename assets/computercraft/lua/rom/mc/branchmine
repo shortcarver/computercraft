@@ -9,6 +9,7 @@ local valuableSwitch = 0
 local visited = nil
 local targets = nil
 local cantdig = nil
+local cavemap = nil
 local distance = 32
 
 local args = { ... }
@@ -19,8 +20,8 @@ if #args == 0 then
 	print("Fill the slots with the items below")
 	print(" slot-item(amount)")
 	print(" 1-coal(32)")
-	print(" 2-chest(13)")
-	print(" 3-cobble(32)")
+	print(" 2-chest(1+)")
+	print(" 3-cobble(1)")
 	print(" 4-dirt(1)")
 	print(" 5-stone(1)")
 	print("")
@@ -35,25 +36,33 @@ if args[1] == "restart" then
 	visited = blocktable.new()
 	visited:setSaveOnChange("/visited.branchmine")
 
-	targets = pq.create(false)
+	targets = blocklist.new()
 	targets:setSaveOnChange("/targets.branchmine")
 
 	cantdig = blocktable.new()
 	cantdig:setSaveOnChange("/cantdig.branchmine")
 
+	cavemap = blocktable.new()
+	cavemap:setSaveOnChange("/cavemap.branchmine")
+
 elseif fs.exists("/visited.branchmine") then
 	visited = blocktable.load("/visited.branchmine")
-	targets = pq.load("/targets.branchmine")
+	targets = blocklist.load("/targets.branchmine")
 	cantdig = blocktable.load("/cantdig.branchmine")
+	cavemap = blocktable.load("/cavemap.branchmine")
+
 else
 	visited = blocktable.new()
 	visited:setSaveOnChange("/visited.branchmine")
 
-	targets = pq.create(false)
+	targets = blocklist.new()
 	targets:setSaveOnChange("/targets.branchmine")
 
 	cantdig = blocktable.new()
 	cantdig:setSaveOnChange("/cantdig.branchmine")
+
+	cavemap = blocktable.new()
+	cavemap:setSaveOnChange("/cavemap.branchmine")
 end
 
 function _onDig(fnIsValuable, fnGetLoc)
@@ -61,7 +70,7 @@ function _onDig(fnIsValuable, fnGetLoc)
 
 	local cx, cy, cz = fnGetLoc()
 	if fnIsValuable() then
-		addTarget(cx,cy,cz)
+		addTarget(cx,cy,cz,true)
 	end
 end
 
@@ -239,7 +248,7 @@ end
 function emptyInventory()
 	local x,y,z,h = t.getLoc()
 
-	t.gotoAttackDigNavi(0,0,0,cantdig)
+	t.gotoAttackNavi(0,0,0,cavemap)
 
 	t.placeDn(CHEST)
 
@@ -250,8 +259,8 @@ function emptyInventory()
 	error()
 end
 
-function addToTarget(x,y,z)
-	if visited:exists(x,y,z) then
+function addToTarget(x,y,z,isOre)
+	if visited:exists(x,y,z)  then
 		return
 	end
 
@@ -260,30 +269,31 @@ function addToTarget(x,y,z)
 	vt.goto(x,y,z)
 
 	if vt.getMoves() < distance then
-		targets:put({x=x,y=y,z=z}, y*1000000 + x * 1000 + z)
+		targets:push(x,y,z,isOre)
 	end
 
 end
 
-function addTarget(x,y,z)
-	addToTarget(x-1, y-1, z+1)
-	addToTarget(x-1, y-1, z-1)
-	addToTarget(x+1, y-1, z+1)
-	addToTarget(x+1, y-1, z-1)
+function addTarget(x,y,z,isOre)
+	addToTarget(x-1, y-1, z+1, false)
+	addToTarget(x-1, y-1, z-1, false)
+	addToTarget(x+1, y-1, z+1, false)
+	addToTarget(x+1, y-1, z-1, false)
 
-	addToTarget(x-1, y+1, z+1)
-	addToTarget(x-1, y+1, z-1)
-	addToTarget(x+1, y+1, z+1)
-	addToTarget(x+1, y+1, z-1)
+	addToTarget(x-1, y+1, z+1, false)
+	addToTarget(x-1, y+1, z-1, false)
+	addToTarget(x+1, y+1, z+1, false)
+	addToTarget(x+1, y+1, z-1, false)
 
-	addToTarget(x,   y,   z)
+	addToTarget(x,   y,   z, isOre)
 end
 
 function _scanAndDig(fnValuable, fnIsChest, fnSuck, fnDig, fnLoc)
 	local cx,cy,cz = t.getLoc()
 	visited:set(cx,cy,cz, true)
 	if fnValuable() then
-		addTarget(fnLoc())
+		tx,ty,tz = fnLoc()
+		addTarget(tx,ty,tz,true)
 		t.select(1)
 		if fnIsChest() then
 			t.select(1)
@@ -349,7 +359,7 @@ end
 
 function dumpChest()
 	local map = {
-		32, 32, 64,  64,
+		32, 32, 1,  1,
 		 1,  0,  0,  0,
 		 0,  0,  0,  0,
 		 0,  0,  0,  0
@@ -375,23 +385,23 @@ if distance ~= nil then
 		-- save current location
 		local cx,cy,cz,ch = t.getLoc()
 
-		addToTarget(cx,cy,cz)
+		addToTarget(cx,cy,cz,false)
 
 		-- scan around
 		scanAndDigAll()
 
 		-- pop items on stack until I get nil
-		local loc = targets:peek()
+		local loc = targets:pop(cx,cy,cz,ch)
 		while loc ~= nil do
 			if not visited:exists(loc.x,loc.y,loc.z) then
 				t.gotoAttackDigNavi(loc.x,loc.y,loc.z,cantdig)
 
 				scanAndDigAll()
 
-				visited:set(loc.x,loc.y,loc.z, true)
+				visited:set(loc.x,loc.y,loc.z,true)
 			else
-				targets:pop()
-				loc = targets:peek()
+				nx,ny,nz,nh = t.getLoc()
+				loc = targets:pop(nx,ny,nz,nh)
 			end
 		end
 		t.gotoDigAttack(cx,cy,cz)

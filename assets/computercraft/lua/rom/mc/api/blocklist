@@ -1,0 +1,129 @@
+function new()
+	local list = {}
+	list.ores = {}
+	list.nonores = {}
+
+	list.push = push
+	list.pop = pop
+	list.save = save
+	list.setSaveOnChange = setSaveOnChange
+	list.clearSaveOnChange = clearSaveOnChange
+	list.autosave = false
+	list.savefile = nil
+
+	return list
+end
+
+function save(self, filename)
+	local data = {}
+
+	data.nonores = self.nonores
+	data.ores = self.ores
+	data.autosave = self.autosave
+	data.savefile = self.savefile
+
+	t.saveObject(filename, data)
+end
+
+function load(filename)
+	local data = t.loadObject(filename)
+
+	local list = new()
+
+	list.nonores = data.nonores
+	list.ores = data.ores
+	list.autosave = data.autosave
+	list.savefile = data.savefile
+
+	return list
+end
+
+function setSaveOnChange(self, filename)
+	self.autosave = true
+	self.savefile = filename
+	self:save(self.savefile)
+end
+
+function clearSaveOnChange(self)
+	self.autosave = false
+	self.savefile = nil
+end
+
+function hashLoc(x,y,z)
+	return x..","..y..","..z
+end
+
+function push(self,x,y,z,isOre)
+	if isOre then
+		self.ores[hashLoc(x,y,z)] = {x=x,y=y,z=z}
+	else
+		self.nonores[hashLoc(x,y,z)] = {x=x,y=y,z=z}
+	end
+
+	if self.autosave then
+		self:save(self.savefile)
+	end
+end
+
+function pop(self,x,y,z,h)
+	key = search(self.ores,x,y,z,h)
+
+	if key ~= nil then
+		data = self.ores[key]
+		self.ores[key] = nil
+
+		if self.autosave then
+			self:save(self.savefile)
+		end
+
+		return data
+	end
+
+	key = search(self.nonores,x,y,z,h)
+
+	if key ~= nil then
+		data = self.nonores[key]
+		self.nonores[key] = nil
+
+		if self.autosave then
+			self:save(self.savefile)
+		end
+
+		return data
+	end
+
+	return nil
+end
+
+function search(data,x,y,z,h)
+	local selV = nil
+	local selK = nil
+	local minSize = -1
+
+	for key,value in pairs(data) do
+		if value ~= nil then
+
+			vt.reset()
+			vt.setLoc(x,y,z,h)
+
+			vt.goto(value.x,value.y,value.z)
+			moves = vt.getMoves()
+
+			if minSize == -1 then
+				minSize = moves
+				selV = value
+				selK = key
+			elseif minSize > moves then
+				minSize = moves
+				selV = value
+				selK = key
+			end
+
+			if moves == 1 then
+				break
+			end
+		end
+	end
+
+	return selK
+end
