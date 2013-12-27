@@ -11,10 +11,11 @@ local targets = nil
 local cantdig = nil
 local cavemap = nil
 local distance = 32
+local distance2 = distance * distance
 
 local args = { ... }
 
-if #args == 0 then
+if args[1] == "help" then
 	print("---branch mine---")
 	print("The automated branch mining script")
 	print("Fill the slots with the items below")
@@ -30,9 +31,8 @@ if #args == 0 then
 	print("--restarts the mining process")
 	print(" branchmine")
 	print("--starts/resumes the mining process")
-end
-
-if args[1] == "restart" then
+elseif args[1] == "restart" then
+	print("Restarting mining")
 	visited = blocktable.new()
 	visited:setSaveOnChange("/visited.branchmine")
 
@@ -46,12 +46,15 @@ if args[1] == "restart" then
 	cavemap:setSaveOnChange("/cavemap.branchmine")
 
 elseif fs.exists("/visited.branchmine") then
+	print("Resuming previous run")
 	visited = blocktable.load("/visited.branchmine")
 	targets = blocklist.load("/targets.branchmine")
 	cantdig = blocktable.load("/cantdig.branchmine")
 	cavemap = blocktable.load("/cavemap.branchmine")
 
+
 else
+	print("Starting a new run")
 	visited = blocktable.new()
 	visited:setSaveOnChange("/visited.branchmine")
 
@@ -65,54 +68,43 @@ else
 	cavemap:setSaveOnChange("/cavemap.branchmine")
 end
 
-function _onDig(fnIsValuable, fnGetLoc)
-	t.select(1)
+print("configuration complete")
 
+function _onDig(fnIsValuable, fnGetLoc, fnIsChest, fnSuck)
 	local cx, cy, cz = fnGetLoc()
 	if fnIsValuable() then
-		addTarget(cx,cy,cz,true)
+		local tx,ty,tz = fnGetLoc()
+		addTarget(tx,ty,tz,true)
+		if fnIsChest() then
+			t.select(1)
+			fnSuck()
+
+			if t.isInventoryFull() then
+				visited:remove(tx,ty,tz)
+				addToTarget(tx,ty,tz, true)
+				emptyInventory()
+			end
+		end
 	end
+
+	t.select(1)
 end
 
 function onDig()
-	return _onDig(isValuable, t.getLocFd)
+	return _onDig(isValuable, t.getLocFd, isChest, suckChest)
 end
 
 function onDigUp()
-	return _onDig(isValuableUp, t.getLocUp)
+	return _onDig(isValuableUp, t.getLocUp, isChestUp, suckChestUp)
 end
 
 function onDigDn()
-	return _onDig(isValuableDn, t.getLocDn)
+	return _onDig(isValuableDn, t.getLocDn, isChestDn, suckChestDn)
 end
 
 t.setDigCallback(onDig)
 t.setDigUpCallback(onDigUp)
 t.setDigDnCallback(onDigDn)
-
-function _safeDig(fnIsValuable, fnIsChest, fnSuck, fnDig, fnDigLoc)
-	-- if it's valuable, then we want to check if it's a chest before digging it
-	if fnIsChest() then
-		t.select(1)
-		while fnSuck() do
-			os.sleep(SUCK_TIME)
-		end
-
-		if t.isInventoryFull() then
-			emptyInventory()
-		end
-	end			
-
-	if not fnDig() then
-		cantdig:set(fnDigLoc(), true)
-	end
-
-	if t.isInventoryFull() then
-		emptyInventory()
-	end
-
-	return state
-end
 
 
 function _isValuable(detect, compare)
@@ -209,9 +201,10 @@ end
 
 function _isChest(compare)
 	t.select(CHEST)
-	if t.compare() then
+	if compare() then
 		return true
 	end
+
 	return false
 end
 
@@ -228,7 +221,7 @@ function isChestUp()
 end
 
 function _suckChest(fnSuck)
-	while fnSuck() do
+	while not t.isInventoryFull() and fnSuck() do
 		os.sleep(0.1)
 	end
 end
@@ -262,16 +255,17 @@ function emptyInventory()
 end
 
 function addToTarget(x,y,z,isOre)
-	if visited:exists(x,y,z) or cantdig.exists(x,y,z) then
+	if visited:exists(x,y,z) or cantdig:exists(x,y,z) then
+		print(x .. "," .. y .. "," .. z .. " not added!")
 		return
 	end
 
-	vt.reset()
-	vt.setLoc(0,0,0,0)
-	vt.goto(x,y,z)
+	local d2 = x * x + y * y + z * z
 
-	if vt.getMoves() < distance then
+	if  d2 < distance2 then
 		targets:push(x,y,z,isOre)
+	else
+		print(x .. "," .. y .. "," .. z .. " out of range!")
 	end
 
 end
@@ -294,21 +288,16 @@ function _scanAndDig(fnValuable, fnIsChest, fnSuck, fnDig, fnLoc)
 	local cx,cy,cz = t.getLoc()
 	visited:set(cx,cy,cz, true)
 	if fnValuable() then
-		tx,ty,tz = fnLoc()
+		local tx,ty,tz = fnLoc()
 		addTarget(tx,ty,tz,true)
 		if fnIsChest() then
 			t.select(1)
-			while fnSuck() do
-				os.sleep(0.1)
-			end
+			fnSuck()
 
-			while t.isInventoryFull() do
+			if t.isInventoryFull() then
+				visited:remove(tx,ty,tz)
+				addToTarget(tx,ty,tz, true)
 				emptyInventory()
-
-				t.select(1)
-				while fnSuck() do
-					os.sleep(0.1)
-				end
 			end
 		end
 
@@ -322,53 +311,53 @@ function _scanAndDig(fnValuable, fnIsChest, fnSuck, fnDig, fnLoc)
 end
 
 function scanAndDig()
-	_scanAndDig(isValuable, isChest, turtle.suck, t.digAll, t.getLocFd)
+	_scanAndDig(isValuable, isChest, suckChest, t.digAll, t.getLocFd)
 end
 
 function scanAndDigUp()
-	_scanAndDig(isValuableUp, isChestUp, turtle.suckUp, t.digAllUp, t.getLocUp)
+	_scanAndDig(isValuableUp, isChestUp, suckChestUp, t.digAllUp, t.getLocUp)
 end
 
 function scanAndDigDn()
-	_scanAndDig(isValuableDn, isChestDn, turtle.suckDn, t.digDn, t.getLocDn)
+	_scanAndDig(isValuableDn, isChestDn, suckChestDn, t.digDn, t.getLocDn)
 end
 
 function scanAndDigAll()
 	local cx,cy,cz = t.getLoc()
 
 	local x,y,z = t.getLocUp()
-	if not visited:exists(x,y,z) and not cantdig.exists(x,y,z) then
+	if not visited:exists(x,y,z) and not cantdig:exists(x,y,z) then
 		scanAndDigUp()
 	end
 	
 	x,y,z = t.getLocDn()
-	if not visited:exists(x,y,z) and not cantdig.exists(x,y,z) then
+	if not visited:exists(x,y,z) and not cantdig:exists(x,y,z) then
 		scanAndDigDn()
 	end
 
 	x,y,z = t.getLocFd()
-	if not visited:exists(x,y,z) and not cantdig.exists(x,y,z) then
+	if not visited:exists(x,y,z) and not cantdig:exists(x,y,z) then
 		scanAndDig()
 	end
 	
 	t.rt()
 	
 	x,y,z = t.getLocFd()
-	if not visited:exists(x,y,z) and not cantdig.exists(x,y,z) then
+	if not visited:exists(x,y,z) and not cantdig:exists(x,y,z) then
 		scanAndDig()
 	end
 	
 	t.rt()
 	
 	x,y,z = t.getLocFd()
-	if not visited:exists(x,y,z) and not cantdig.exists(x,y,z) then
+	if not visited:exists(x,y,z) and not cantdig:exists(x,y,z) then
 		scanAndDig()
 	end
 	
 	t.rt()
 
 	x,y,z = t.getLocFd()
-	if not visited:exists(x,y,z) and not cantdig.exists(x,y,z) then
+	if not visited:exists(x,y,z) and not cantdig:exists(x,y,z) then
 		scanAndDig()
 	end
 end
@@ -397,7 +386,11 @@ if distance ~= nil then
 	t.setLoc(0,0,0,0)
 	cantdig:set(0,-1,0, true)
 
-	while distance > 0 do
+	print("Starting to mine")
+
+	local d = 0
+
+	while d < distance do
 		-- save current location
 		local cx,cy,cz,ch = t.getLoc()
 
@@ -409,7 +402,7 @@ if distance ~= nil then
 		-- pop items on stack until I get nil
 		local loc = targets:pop(cx,cy,cz,ch)
 		while loc ~= nil do
-			if not visited:exists(loc.x,loc.y,loc.z) and not cantdig.exists(x,y,z) then
+			if not visited:exists(loc.x,loc.y,loc.z) and not cantdig:exists(loc.x,loc.y,loc.z) then
 				t.gotoAttackDigNavi(loc.x,loc.y,loc.z,cantdig)
 
 				scanAndDigAll()
@@ -426,7 +419,7 @@ if distance ~= nil then
 		t.select(1)
 		t.fdDigAttack()
 
-		distance = distance - 1
+		d = d + 1
 	end
 
 	t.gotoAttackDigNavi(0,0,0,cantdig)
@@ -434,6 +427,11 @@ if distance ~= nil then
 	dumpChest()
 	t.setHeading(0)
 	print("Branchmine complete, could not find any more ores")
+
+	fs.delete("/visited.branchmine")
+	fs.delete("/targets.branchmine")
+	fs.delete("/cantdig.branchmine")
+	fs.delete("/cavemap.branchmine")
 end
 
 
