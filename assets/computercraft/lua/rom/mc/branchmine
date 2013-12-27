@@ -256,11 +256,13 @@ function emptyInventory()
 
 	t.setHeading(0)
 
+	print("Inventory full. This cycle complete")
+
 	error()
 end
 
 function addToTarget(x,y,z,isOre)
-	if visited:exists(x,y,z)  then
+	if visited:exists(x,y,z) or cantdig.exists(x,y,z) then
 		return
 	end
 
@@ -294,11 +296,10 @@ function _scanAndDig(fnValuable, fnIsChest, fnSuck, fnDig, fnLoc)
 	if fnValuable() then
 		tx,ty,tz = fnLoc()
 		addTarget(tx,ty,tz,true)
-		t.select(1)
 		if fnIsChest() then
 			t.select(1)
 			while fnSuck() do
-				os.sleep(SUCK_TIME)
+				os.sleep(0.1)
 			end
 
 			while t.isInventoryFull() do
@@ -306,7 +307,7 @@ function _scanAndDig(fnValuable, fnIsChest, fnSuck, fnDig, fnLoc)
 
 				t.select(1)
 				while fnSuck() do
-					os.sleep(SUCK_TIME)
+					os.sleep(0.1)
 				end
 			end
 		end
@@ -334,27 +335,42 @@ end
 
 function scanAndDigAll()
 	local cx,cy,cz = t.getLoc()
-	if visited:exists(cx,cy,cz) then
-		return
-	end
 
 	local x,y,z = t.getLocUp()
-	if not visited:exists(x,y,z) then
+	if not visited:exists(x,y,z) and not cantdig.exists(x,y,z) then
 		scanAndDigUp()
 	end
 	
 	x,y,z = t.getLocDn()
-	if not visited:exists(x,y,z) then
+	if not visited:exists(x,y,z) and not cantdig.exists(x,y,z) then
 		scanAndDigDn()
 	end
 
-	scanAndDig()
+	x,y,z = t.getLocFd()
+	if not visited:exists(x,y,z) and not cantdig.exists(x,y,z) then
+		scanAndDig()
+	end
+	
 	t.rt()
-	scanAndDig()
+	
+	x,y,z = t.getLocFd()
+	if not visited:exists(x,y,z) and not cantdig.exists(x,y,z) then
+		scanAndDig()
+	end
+	
 	t.rt()
-	scanAndDig()
+	
+	x,y,z = t.getLocFd()
+	if not visited:exists(x,y,z) and not cantdig.exists(x,y,z) then
+		scanAndDig()
+	end
+	
 	t.rt()
-	scanAndDig()
+
+	x,y,z = t.getLocFd()
+	if not visited:exists(x,y,z) and not cantdig.exists(x,y,z) then
+		scanAndDig()
+	end
 end
 
 function dumpChest()
@@ -393,7 +409,7 @@ if distance ~= nil then
 		-- pop items on stack until I get nil
 		local loc = targets:pop(cx,cy,cz,ch)
 		while loc ~= nil do
-			if not visited:exists(loc.x,loc.y,loc.z) then
+			if not visited:exists(loc.x,loc.y,loc.z) and not cantdig.exists(x,y,z) then
 				t.gotoAttackDigNavi(loc.x,loc.y,loc.z,cantdig)
 
 				scanAndDigAll()
@@ -417,6 +433,7 @@ if distance ~= nil then
 	t.placeDn(CHEST)
 	dumpChest()
 	t.setHeading(0)
+	print("Branchmine complete, could not find any more ores")
 end
 
 
