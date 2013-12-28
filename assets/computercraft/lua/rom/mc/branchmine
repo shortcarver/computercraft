@@ -1,8 +1,7 @@
 local FUEL = 1
-local CHEST = 2
-local COBBLE = 3
-local DIRT = 4
-local STONE = 5
+local COBBLE = 2
+local DIRT = 3
+local STONE = 4
 
 local valuableSwitch = 0
 
@@ -21,10 +20,9 @@ if args[1] == "help" then
 	print("Fill the slots with the items below")
 	print(" slot-item(amount)")
 	print(" 1-coal(32)")
-	print(" 2-chest(1+)")
-	print(" 3-cobble(1)")
-	print(" 4-dirt(1)")
-	print(" 5-stone(1)")
+	print(" 2-cobble(1)")
+	print(" 3-dirt(1)")
+	print(" 4-stone(1)")
 	print("")
 	print("Usage:")
 	print(" branchmine restart")
@@ -42,16 +40,11 @@ elseif args[1] == "restart" then
 	cantdig = blocktable.new()
 	cantdig:setSaveOnChange("/cantdig.branchmine")
 
-	cavemap = blocktable.new()
-	cavemap:setSaveOnChange("/cavemap.branchmine")
-
 elseif fs.exists("/visited.branchmine") then
 	print("Resuming previous run")
 	visited = blocktable.load("/visited.branchmine")
 	targets = blocklist.load("/targets.branchmine")
 	cantdig = blocktable.load("/cantdig.branchmine")
-	cavemap = blocktable.load("/cavemap.branchmine")
-
 
 else
 	print("Starting a new run")
@@ -64,26 +57,22 @@ else
 	cantdig = blocktable.new()
 	cantdig:setSaveOnChange("/cantdig.branchmine")
 
-	cavemap = blocktable.new()
-	cavemap:setSaveOnChange("/cavemap.branchmine")
 end
 
 print("configuration complete")
 
-function _onDig(fnIsValuable, fnGetLoc, fnIsChest, fnSuck)
+function _onDig(fnIsValuable, fnGetLoc, fnSuck)
 	local cx, cy, cz = fnGetLoc()
 	if fnIsValuable() then
 		local tx,ty,tz = fnGetLoc()
 		addTarget(tx,ty,tz,true)
-		if fnIsChest() then
-			t.select(1)
-			fnSuck()
+		t.select(1)
+		fnSuck()
 
-			if t.isInventoryFull() then
-				visited:remove(tx,ty,tz)
-				addToTarget(tx,ty,tz, true)
-				emptyInventory()
-			end
+		if t.isInventoryFull() then
+			visited:remove(tx,ty,tz)
+			addToTarget(tx,ty,tz, true)
+			emptyInventory()
 		end
 	end
 
@@ -91,15 +80,15 @@ function _onDig(fnIsValuable, fnGetLoc, fnIsChest, fnSuck)
 end
 
 function onDig()
-	return _onDig(isValuable, t.getLocFd, isChest, suckChest)
+	return _onDig(isValuable, t.getLocFd, suckChest)
 end
 
 function onDigUp()
-	return _onDig(isValuableUp, t.getLocUp, isChestUp, suckChestUp)
+	return _onDig(isValuableUp, t.getLocUp, suckChestUp)
 end
 
 function onDigDn()
-	return _onDig(isValuableDn, t.getLocDn, isChestDn, suckChestDn)
+	return _onDig(isValuableDn, t.getLocDn, suckChestDn)
 end
 
 t.setDigCallback(onDig)
@@ -163,63 +152,6 @@ function isValuableDn()
 	return _isValuable(t.detectDn, t.compareDn)
 end
 
--- use cobble for up/down since dirt will clog fillers
-function placeJunkUp(force)
-	force = force or false
-
-	if t.getItemCount(COBBLE) > 40 or force then
-		t.select(COBBLE)
-		t.placeUp()
-	end
-end
-
-function placeJunkDn(force)
-	force = force or false
-
-	if t.getItemCount(COBBLE) > 40 or force then
-		t.select(COBBLE)
-		t.placeDown()
-	end
-end
-
--- place dirt first to get rid of it
-function placeJunk(force)
-	force = force or false
-
-	if t.detect() then
-		return
-	end
-
-	if t.getItemCount(DIRT) > 1 then
-		t.select(DIRT)
-		t.place(DIRT)
-	elseif t.getItemCount(COBBLE) > 12 or force then
-		t.select(COBBLE)
-		t.place(COBBLE)
-	end
-end
-
-function _isChest(compare)
-	t.select(CHEST)
-	if compare() then
-		return true
-	end
-
-	return false
-end
-
-function isChest()
-	return _isChest(t.compare)
-end
-
-function isChestDn()
-	return _isChest(t.compareDn)
-end
-
-function isChestUp()
-	return _isChest(t.compareUp)
-end
-
 function _suckChest(fnSuck)
 	while not t.isInventoryFull() and fnSuck() do
 		os.sleep(0.1)
@@ -241,9 +173,7 @@ end
 function emptyInventory()
 	local x,y,z,h = t.getLoc()
 
-	t.gotoAttackNavi(0,0,0,cavemap)
-
-	t.placeDn(CHEST)
+	t.gotoAttackDigNavi(0,0,0,cantdig)
 
 	dumpChest()
 
@@ -284,21 +214,19 @@ function addTarget(x,y,z,isOre)
 	addToTarget(x,   y,   z, isOre)
 end
 
-function _scanAndDig(fnValuable, fnIsChest, fnSuck, fnDig, fnLoc)
+function _scanAndDig(fnValuable, fnSuck, fnDig, fnLoc)
 	local cx,cy,cz = t.getLoc()
 	visited:set(cx,cy,cz, true)
 	if fnValuable() then
 		local tx,ty,tz = fnLoc()
 		addTarget(tx,ty,tz,true)
-		if fnIsChest() then
-			t.select(1)
-			fnSuck()
+		t.select(1)
+		fnSuck()
 
-			if t.isInventoryFull() then
-				visited:remove(tx,ty,tz)
-				addToTarget(tx,ty,tz, true)
-				emptyInventory()
-			end
+		if t.isInventoryFull() then
+			visited:remove(tx,ty,tz)
+			addToTarget(tx,ty,tz, true)
+			emptyInventory()
 		end
 
 		t.select(1)
@@ -311,15 +239,15 @@ function _scanAndDig(fnValuable, fnIsChest, fnSuck, fnDig, fnLoc)
 end
 
 function scanAndDig()
-	_scanAndDig(isValuable, isChest, suckChest, t.digAll, t.getLocFd)
+	_scanAndDig(isValuable, suckChest, t.digAll, t.getLocFd)
 end
 
 function scanAndDigUp()
-	_scanAndDig(isValuableUp, isChestUp, suckChestUp, t.digAllUp, t.getLocUp)
+	_scanAndDig(isValuableUp, suckChestUp, t.digAllUp, t.getLocUp)
 end
 
 function scanAndDigDn()
-	_scanAndDig(isValuableDn, isChestDn, suckChestDn, t.digDn, t.getLocDn)
+	_scanAndDig(isValuableDn, suckChestDn, t.digDn, t.getLocDn)
 end
 
 function scanAndDigAll()
@@ -364,8 +292,8 @@ end
 
 function dumpChest()
 	local map = {
-		32, 32, 1,  1,
-		 1,  0,  0,  0,
+		32, 1, 1,  1,
+		 0,  0,  0,  0,
 		 0,  0,  0,  0,
 		 0,  0,  0,  0
 	}
@@ -423,7 +351,6 @@ if distance ~= nil then
 	end
 
 	t.gotoAttackDigNavi(0,0,0,cantdig)
-	t.placeDn(CHEST)
 	dumpChest()
 	t.setHeading(0)
 	print("Branchmine complete, could not find any more ores")
@@ -431,7 +358,6 @@ if distance ~= nil then
 	fs.delete("/visited.branchmine")
 	fs.delete("/targets.branchmine")
 	fs.delete("/cantdig.branchmine")
-	fs.delete("/cavemap.branchmine")
 end
 
 
