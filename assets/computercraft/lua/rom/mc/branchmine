@@ -11,6 +11,7 @@ local cantdig = nil
 local cavemap = nil
 local distance = 32
 local distance2 = distance * distance
+local goinghome = false
 
 local args = { ... }
 
@@ -171,6 +172,11 @@ function suckChestDn()
 end
 
 function emptyInventory()
+	if goinghome then
+		return
+	end
+
+	goinghome = true
 	local x,y,z,h = t.getLoc()
 
 	t.gotoAttackDigNavi(0,0,0,cantdig)
@@ -180,6 +186,8 @@ function emptyInventory()
 	t.setHeading(0)
 
 	print("Inventory full. This cycle complete")
+
+	goinghome = false
 
 	error()
 end
@@ -219,7 +227,7 @@ function _scanAndDig(fnValuable, fnSuck, fnDig, fnLoc)
 	visited:set(cx,cy,cz, true)
 	if fnValuable() then
 		local tx,ty,tz = fnLoc()
-		addTarget(tx,ty,tz,true)
+		addToTarget(tx,ty,tz,true)
 		t.select(1)
 		fnSuck()
 
@@ -230,7 +238,14 @@ function _scanAndDig(fnValuable, fnSuck, fnDig, fnLoc)
 		end
 
 		t.select(1)
-		fnDig()
+
+--		fnDig()
+		if not fnDig() then
+			visited.set(tx,tx,tz,true)
+			cantdig:set(tx,ty,tz,true)
+		else
+			addTarget(tx,ty,tz,true)
+		end
 
 		if t.isInventoryFull() then
 			emptyInventory()
@@ -292,7 +307,7 @@ end
 
 function dumpChest()
 	local map = {
-		32, 1, 1,  1,
+		64, 1, 1,  1,
 		 0,  0,  0,  0,
 		 0,  0,  0,  0,
 		 0,  0,  0,  0

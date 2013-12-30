@@ -3,13 +3,23 @@
 
 local args = { ... }
 
+if #args < 4 then
+	print("Usage:")
+	print("room [width] [depth] [height] [lrudfbn]")
+	print("The room will extend forward, up, and to the right of the turtle.")
+	print("l = build left wall")
+	print("r = build right wall")
+	print("u = build cieling")
+	print("d = build floor")
+	print("f = build front wall")
+	print("b = build back wall")
+	print("n = no walls")
+end
 
 local width = tonumber(args[1])
 local depth = tonumber(args[2])
 local height = tonumber(args[3])
 local options = args[4]
-
-print(options)
 
 local bLeft = options:find("l") ~= nil
 local bRight = options:find("r") ~= nil
