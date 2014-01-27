@@ -1,0 +1,13 @@
+t.select(1)
+t.place()
+
+sleep(15)
+
+for i=1,16 do
+  t.select(i)
+  t.dropUp()
+end
+
+t.select(1)
+t.dig()
+

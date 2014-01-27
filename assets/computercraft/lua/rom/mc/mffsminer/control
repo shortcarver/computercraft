@@ -1,0 +1,12 @@
+redstone.setOutput("back", true)
+sleep(1)
+redstone.setOutput("back", false)
+
+sleep(60)
+
+if redstone.getInput("front") then
+  redstone.setOutput("left", true)
+  sleep(1)
+  redstone.setOutput("left", false)
+end
+
