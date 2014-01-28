@@ -2,7 +2,7 @@ redstone.setOutput("back", true)
 sleep(1)
 redstone.setOutput("back", false)
 
-sleep(60)
+sleep(30)
 
 if redstone.getInput("front") then
   redstone.setOutput("left", true)
