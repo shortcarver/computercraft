@@ -1,5 +1,6 @@
-t.select(1)
+t.select(16)
 t.place()
+t.select(1)
 
 sleep(15)
 
@@ -10,6 +11,6 @@ for i=1,16 do
   end
 end
 
-t.select(1)
+t.select(16)
 t.dig()
 
