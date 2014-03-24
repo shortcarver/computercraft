@@ -28,19 +28,14 @@ function getFurthest()
 
   modem.transmit(channel, os.getComputerID(), "PING")
   local timeout = os.startTimer(2)
-  local d = {999,999,999,999}
+  local d = {}
+  local count = 1
   while true do
     local e,p1,p2,p3,p4,p5 = os.pullEvent()
     if e == "modem_message" then
-      if p5 < d[1] then
-        d[1] = p5
-      elseif p5 < d[2] then
-        d[2] = p5
-      elseif p5 < d[3] then
-        d[3] = p5
-      elseif p5 < d[4] then
-        d[4] = p5
-      end
+      print(p5)
+      d[count] = p5
+      count = count + 1
     
     elseif e == "timer" then
       if timeout == p1 then
@@ -52,17 +47,19 @@ function getFurthest()
   modem.close(os.getComputerID())
   modem.close(channel)
 
-  if d[4] ~= 999 then
-    return d[4]
-  elseif d[3] ~= 999 then
-    return d[3]
-  elseif d[2] ~= 999 then
-    return d[2]
-  elseif d[1] ~= 999 then
-    return d[1]
+  local min = 1
+  local val = 0
+  for i = 1,4 do
+    for k in pairs(d) do
+      if d[k] < d[min] then
+        min = k
+	val = d[k]
+      end
+    end
+    d[min] = 999
   end
 
-  return nil
+  return val
 end
    
 
