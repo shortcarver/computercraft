@@ -1,0 +1,69 @@
+local channel = 65534
+
+function getModem()
+  local modem = nil
+  local modem_side = nil
+
+  for n,sSide in ipairs( rs.getSides() ) do
+    if peripheral.getType( sSide ) == "modem" and peripheral.call( sSide, "isWireless" ) then	
+      modem_side = sSide
+      modem = peripheral.wrap(sSide)
+      print("Found modem on ", sSide, " side.")
+      break
+    end
+  end
+
+  if modem == nil then
+    print("Could not find modem!")
+    return nil
+  end
+
+  return modem
+end
+
+function getFurthest()
+  modem = getModem()
+  modem.open(channel)
+  modem.open(os.getComputerID())
+
+  modem.transmit(channel, os.getComputerID(), "PING")
+  local timeout = os.startTimer(2)
+  local d = {999,999,999,999}
+  while true do
+    local e,p1,p2,p3,p4,p5 = os.pullEvent()
+    if e == "modem_message" then
+      if p5 < d[1] then
+        d[1] = p5
+      elseif p5 < d[2] then
+        d[2] = p5
+      elseif p5 < d[3] then
+        d[3] = p5
+      elseif p5 < d[4] then
+        d[4] = p5
+      end
+    
+    elseif e == "timer" then
+      if timeout == p1 then
+        break
+      end
+    end
+  end
+
+  modem.close(os.getComputerID())
+  modem.close(channel)
+
+  if d[4] ~= 999 then
+    return d[4]
+  elseif d[3] ~= 999 then
+    return d[3]
+  elseif d[2] ~= 999 then
+    return d[2]
+  elseif d[1] ~= 999 then
+    return d[1]
+  end
+
+  return nil
+end
+   
+
+

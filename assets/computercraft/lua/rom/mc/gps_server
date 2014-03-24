@@ -1,0 +1,10 @@
+local x,y,z = nil, nil, nil
+
+while x == nil do
+  x,y,z = gps.locate()
+  if x == nil then
+    sleep(5)
+  end
+end
+
+shell.run("gps","host",x,y,z)
