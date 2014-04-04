@@ -1,0 +1,115 @@
+local FIELD_NORTH = colors.white
+local FIELD_SOUTH = colors.orange
+local FIELD_WEST = colors.magenta
+local ENGINE_RESET = colors.lightBlue
+local NORTH = colors.yellow
+local WEST = colors.lime
+local SOUTH = colors.pink
+local chest = peripheral.wrap("left")
+
+function isItemInChest()
+  return chest.getStackInSlot(1) ~= nil
+end
+
+function setOutput(value)
+  curr = redstone.getBundledOutput("top")
+  curr = colors.combine(curr,value)
+  redstone.setBundledOutput("top", curr)
+end
+
+function unsetOutput(value)
+  curr = redstone.getBundledOutput("top")
+  curr = colors.subtract(curr, value)
+  redstone.setBundledOutput("top", curr)
+end
+
+function clearOutput()
+  redstone.setBundledOutput("top", 0)
+end
+
+function isSet(value)
+  curr = redstone.getBundledInput("top")
+  return colors.test(curr, value)
+end
+
+function resetEngine()
+  setOutput(ENGINE_RESET)
+  sleep(1)
+  unsetOutput(ENGINE_RESET)
+end
+
+function moveNorth()
+  setOutput(NORTH)
+  sleep(0.75)
+  unsetOutput(NORTH)
+end
+
+function moveSouth()
+  setOutput(SOUTH)
+  sleep(0.75)
+  unsetOutput(SOUTH)
+end
+
+function moveWest()
+  setOutput(WEST)
+  sleep(1.0)
+  unsetOutput(WEST)
+end
+
+function digNorth()
+  setOutput(FIELD_NORTH)
+end
+
+function digSouth()
+  setOutput(FIELD_SOUTH)
+end
+
+function digWest()
+  setOutput(FIELD_WEST)
+end
+
+function getLocation()
+  local x,y,z = nil, nil, nil
+  
+  while x == nil do
+    x,y,z = gps.locate()
+    if x == nil then
+      sleep(5)
+    end
+  end
+  return x,y,z
+end
+
+resetEngine()
+
+local x,y,z = getLocation()
+
+digNorth()
+        
+sleep(20)
+
+clearOutput()
+
+while not isSet(ON_SWITCH) or not isItemInChest() do
+  sleep(5)
+end
+
+moveNorth()
+
+sleep(10)
+os.reboot()
+
+if x % 2 == 1 then
+  if z == 220 then
+    moveWest()
+  else
+    moveSouth()
+  end
+else
+  if z == -28 then
+    moveWest()
+  else
+    moveNorth()
+  end
+end
+
