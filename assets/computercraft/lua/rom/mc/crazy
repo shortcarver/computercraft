@@ -82,22 +82,43 @@ end
 
 resetEngine()
 
-local x,y,z = getLocation()
-
-digNorth()
-        
-sleep(20)
-
-clearOutput()
-
-while not isSet(ON_SWITCH) or not isItemInChest() do
+while not isItemInChest() do
   sleep(5)
 end
 
-moveNorth()
+local x,y,z = getLocation()
 
+if z == -38 then
+  if x % 20 ~= 10 then
+    digWest()
+    sleep(20)
+    clearOutput()
+    moveWest()
+  else
+    digSouth()
+    sleep(16)
+    clearOutput()
+    moveSouth()
+  end
+elseif x % 20 == 10 then
+  digSouth()
+  sleep(16)
+  clearOutput()
+  moveSouth()
+elseif x % 20 == 0 then
+  digNorth()
+  sleep(16)
+  clearOutput()
+  moveSouth()
+end
+  
 sleep(10)
 os.reboot()
+
+digNorth()
+sleep(20)
+clearOutput()
+moveNorth()
 
 if x % 2 == 1 then
   if z == 220 then
