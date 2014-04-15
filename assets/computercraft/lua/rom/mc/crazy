@@ -91,7 +91,7 @@ local x,y,z = getLocation()
 if z == -38 then
   if x % 20 ~= 10 then
     digWest()
-    sleep(20)
+    sleep(8)
     clearOutput()
     moveWest()
   else
@@ -99,6 +99,18 @@ if z == -38 then
     sleep(16)
     clearOutput()
     moveSouth()
+  end
+elseif z == 230 then
+  if x % 20 ~= 0 then
+    digWest()
+    sleep(10)
+    clearOutput()
+    moveWest()
+  else
+    digNorth()
+    sleep(16)
+    clearOutput()
+    moveNorth()
   end
 elseif x % 20 == 10 then
   digSouth()
@@ -109,28 +121,8 @@ elseif x % 20 == 0 then
   digNorth()
   sleep(16)
   clearOutput()
-  moveSouth()
+  moveNorth()
 end
   
 sleep(10)
 os.reboot()
-
-digNorth()
-sleep(20)
-clearOutput()
-moveNorth()
-
-if x % 2 == 1 then
-  if z == 220 then
-    moveWest()
-  else
-    moveSouth()
-  end
-else
-  if z == -28 then
-    moveWest()
-  else
-    moveNorth()
-  end
-end
-
