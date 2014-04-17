@@ -88,7 +88,7 @@ end
 
 local x,y,z = getLocation()
 
-if z == -38 then
+if z == -39 then
   if x % 20 ~= 10 then
     digWest()
     sleep(8)
@@ -100,7 +100,7 @@ if z == -38 then
     clearOutput()
     moveSouth()
   end
-elseif z == 230 then
+elseif z == 231 then
   if x % 20 ~= 0 then
     digWest()
     sleep(10)
