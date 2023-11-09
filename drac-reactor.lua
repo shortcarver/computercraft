@@ -38,7 +38,7 @@ while true do
 
     -- input safety
     if inGate.getSignalLowFlow() < 100000 then
-      inGate.setSignalLowFlow((100000)
+      inGate.setSignalLowFlow(100000)
     end
     
     outGate.setSignalLowFlow(info.generationRate * 8000/temp)
