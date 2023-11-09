@@ -28,10 +28,17 @@ while true do
     
     fsp = 100 * fs/maxfs
     
-    if fsp < 20 then
-     inGate.setSignalLowFlow(inGate.getSignalLowFlow() + 500)
-    elseif fsp > 20 then
-     inGate.setSignalLowFlow(inGate.getSignalLowFlow() - 500)
+--    if fsp < 20 then
+--     inGate.setSignalLowFlow(inGate.getSignalLowFlow() + 500)
+--    elseif fsp > 20 then
+--     inGate.setSignalLowFlow(inGate.getSignalLowFlow() - 500)
+--    end
+
+    inGate.setSignalLowFlow(inGate.getSignalLowFlow() + (20-fsp)*250)
+
+    -- input safety
+    if inGate.getSignalLowFlow() < 100000 then
+      inGate.setSignalLowFlow((100000)
     end
     
     outGate.setSignalLowFlow(info.generationRate * 8000/temp)
